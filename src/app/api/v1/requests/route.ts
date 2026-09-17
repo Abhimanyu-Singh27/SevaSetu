@@ -19,8 +19,25 @@ export async function GET(request: Request) {
   const cursorArgs: Pick<Prisma.ServiceRequestFindManyArgs, "cursor" | "skip"> = cursor ? { cursor: { id: cursor }, skip: 1 } : {};
   const query: Prisma.ServiceRequestFindManyArgs = {
     where: scope,
-    select: { id: true, status: true, description: true, preferredDate: true, preferredTime: true, budget: true, locationLabel: true, createdAt: true, updatedAt: true, service: { select: { id: true, name: true, slug: true } }, customer: { select: { userId: true, fullName: true } }, worker: { select: { id: true, userId: true, fullName: true } } }, history: { orderBy: { createdAt: "asc" as const }, select: { status: true, note: true, createdAt: true } } },
-    orderBy: { createdAt: "desc" as const },
+    select: {
+      id: true,
+      status: true,
+      description: true,
+      preferredDate: true,
+      preferredTime: true,
+      budget: true,
+      locationLabel: true,
+      createdAt: true,
+      updatedAt: true,
+      service: { select: { id: true, name: true, slug: true } },
+      customer: { select: { userId: true, fullName: true } },
+      worker: { select: { id: true, userId: true, fullName: true } },
+      history: {
+        orderBy: { createdAt: "asc" },
+        select: { status: true, note: true, createdAt: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
     take: limit + 1,
     ...cursorArgs,
   };
