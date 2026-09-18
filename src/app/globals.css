@@ -594,6 +594,10 @@ button {
     display: none;
 }
 
+.nav-backdrop {
+    display: none;
+}
+
 .top-actions {
     align-items: center;
     display: flex;
@@ -1521,17 +1525,46 @@ footer .footer-love svg {
 
 @media (max-width: 640px) {
     .topbar {
+        gap: 8px;
         height: 68px;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .brand {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .brand .sevasetu-logo-copy strong {
+        font-size: 19px;
+    }
+
+    .brand .sevasetu-logo-copy small {
+        font-size: 8px;
     }
 
     .top-actions {
-        display: none;
+        display: flex;
+        gap: 8px;
+        margin-left: auto;
+    }
+
+    .top-actions .text-button {
+        font-size: 11px;
+    }
+
+    .top-actions .button-small {
+        font-size: 11px;
+        padding: 9px 10px;
     }
 
     .menu-button {
         background: none;
         color: var(--navy);
         display: block;
+        flex: 0 0 auto;
+        padding: 8px 0 8px 2px;
     }
 
     .nav-links {
@@ -1548,7 +1581,15 @@ footer .footer-love svg {
         right: 0;
         top: 0;
         width: 75%;
-        z-index: 10;
+        z-index: 12;
+    }
+
+    .nav-backdrop {
+        background: rgba(3, 18, 33, .28);
+        display: block;
+        inset: 0;
+        position: fixed;
+        z-index: 11;
     }
 
     .nav-links.open {
@@ -1570,12 +1611,14 @@ footer .footer-love svg {
     }
 
     .hero h1 {
-        font-size: 46px;
-        letter-spacing: -2px;
+        font-size: clamp(36px, 11vw, 46px);
+        letter-spacing: -1px;
+        max-width: 100%;
     }
 
     .hero-copy>p {
         font-size: 15px;
+        max-width: 100%;
     }
 
     .search-panel {
@@ -1598,6 +1641,21 @@ footer .footer-love svg {
     .search-button {
         margin-top: 2px;
         width: 100%;
+    }
+
+    .hero-stat {
+        align-items: flex-start;
+        min-width: 0;
+    }
+
+    .hero-stat>div {
+        min-width: 0;
+    }
+
+    .hero-stat small {
+        display: block;
+        line-height: 1.3;
+        max-width: 130px;
     }
 
     .popular {

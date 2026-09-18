@@ -48,6 +48,7 @@ export default function Home() {
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [showAllServices, setShowAllServices] = useState(false);
   const [showAllProfessionals, setShowAllProfessionals] = useState(false);
+  const [searchSubmitted, setSearchSubmitted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notice, setNotice] = useState("");
   const [workers, setWorkers] = useState<Array<(typeof demoWorkers)[number] & { id?: string }>>(demoWorkers);
@@ -62,6 +63,13 @@ export default function Home() {
   const filteredWorkers = useMemo(() => workers.filter((worker) => `${worker.name} ${worker.role} ${worker.skills}`.toLowerCase().includes(query.toLowerCase())), [workers, query]);
 
   function startSearch() {
+    if (!query.trim() || !location.trim()) {
+      setSearchSubmitted(false);
+      setShowAllProfessionals(false);
+      setNotice("Choose a service and location before searching.");
+      return;
+    }
+    setSearchSubmitted(true);
     const selectedLocation = location || "your area";
     setNotice(query ? `Showing trusted ${query.toLowerCase()} professionals near ${selectedLocation}.` : `Tell us what you need in ${selectedLocation} to find a match.`);
     document.getElementById("professionals")?.scrollIntoView({ behavior: "smooth" });
@@ -73,6 +81,10 @@ export default function Home() {
   }
 
   function browseProfessionals() {
+    if (!searchSubmitted) {
+      setNotice("Search for a service and choose a location first.");
+      return;
+    }
     setShowAllProfessionals((value) => {
       const nextValue = !value;
       setNotice(nextValue ? "Showing all available SevaSetu professionals." : "Showing featured professionals.");
@@ -96,6 +108,8 @@ export default function Home() {
     const nextLocation = locationDraft.trim();
     if (!nextLocation && !coordinates) return;
     setLocation(nextLocation || `Pinned location (${coordinates?.latitude.toFixed(4)}, ${coordinates?.longitude.toFixed(4)})`);
+    setSearchSubmitted(false);
+    setShowAllProfessionals(false);
     setLocationPickerOpen(false);
   }
 
@@ -103,6 +117,7 @@ export default function Home() {
     <main>
       <header className="topbar">
         <a className="brand" href="#top" aria-label="SevaSetu home"><SevaSetuLogo className="navbar-logo" /></a>
+        {menuOpen && <button className="nav-backdrop" type="button" aria-label="Close navigation menu" onClick={() => setMenuOpen(false)} />}
         <nav className={menuOpen ? "nav-links open" : "nav-links"} aria-label="Main navigation">
           <a href="#services" onClick={() => setMenuOpen(false)}>Services</a><a href="#how-it-works" onClick={() => setMenuOpen(false)}>How it works</a><a href="#professionals" onClick={() => setMenuOpen(false)}>Find a professional</a>
           <button className="nav-close" onClick={() => setMenuOpen(false)} aria-label="Close menu"><X size={20} /></button>
@@ -114,8 +129,8 @@ export default function Home() {
       <section className="hero" id="top">
         <div className="hero-orbit orbit-one" /><div className="hero-orbit orbit-two" />
         <div className="hero-copy"><div className="eyebrow"><span className="eyebrow-dot" /> Local help, made simple</div><h1>Good work is <em>closer</em> than you think.</h1><p>Find skilled, verified professionals for the jobs that keep your home and life moving.</p>
-          <div className="search-panel"><div className="search-field"><Search size={19} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="What service do you need?" aria-label="Service needed" /></div><button type="button" className="location-field" onClick={() => { setLocationDraft(location); setLocationPickerOpen(true); }} aria-label="Choose service location"><MapPin size={18} /><span>{location || "Choose your location"}</span></button><button className="button search-button" onClick={startSearch}>Search <ArrowRight size={18} /></button></div>
-          <div className="popular"><span>Popular:</span><button onClick={() => setQuery("Electrician")}>Electrician</button><button onClick={() => setQuery("Plumber")}>Plumber</button><button onClick={() => setQuery("Cleaning")}>Cleaning</button><button onClick={() => setQuery("Carpenter")}>Carpenter</button></div>
+          <div className="search-panel"><div className="search-field"><Search size={19} /><input value={query} onChange={(event) => { setQuery(event.target.value); setSearchSubmitted(false); setShowAllProfessionals(false); }} placeholder="What service do you need?" aria-label="Service needed" /></div><button type="button" className="location-field" onClick={() => { setLocationDraft(location); setLocationPickerOpen(true); }} aria-label="Choose service location"><MapPin size={18} /><span>{location || "Choose your location"}</span></button><button className="button search-button" onClick={startSearch}>Search <ArrowRight size={18} /></button></div>
+          <div className="popular"><span>Popular:</span><button onClick={() => { setQuery("Electrician"); setSearchSubmitted(false); setShowAllProfessionals(false); }}>Electrician</button><button onClick={() => { setQuery("Plumber"); setSearchSubmitted(false); setShowAllProfessionals(false); }}>Plumber</button><button onClick={() => { setQuery("Cleaning"); setSearchSubmitted(false); setShowAllProfessionals(false); }}>Cleaning</button><button onClick={() => { setQuery("Carpenter"); setSearchSubmitted(false); setShowAllProfessionals(false); }}>Carpenter</button></div>
         </div>
         <div className="hero-aside"><div className="trust-card"><div className="trust-icon"><ShieldCheck size={23} /></div><div><strong>Service you can trust</strong><span>Every professional is reviewed by our community.</span></div></div><div className="hero-stat"><strong>4.8<span>/5</span></strong><div><div className="stars">★★★★★</div><small>Average community rating</small></div></div></div>
       </section>
@@ -126,7 +141,7 @@ export default function Home() {
 
       <section className="section" id="services"><div className="section-heading"><div><span className="kicker">Start with a service</span><h2>Whatever needs doing,<br /><span>there&apos;s someone for it.</span></h2></div><button type="button" className="link-button" onClick={browseServices}>{showAllServices ? "Show less" : "Browse all services"} <ArrowRight size={17} /></button></div><div className="category-grid">{categories.slice(0, showAllServices ? categories.length : 5).map((category) => { const Icon = category.icon; return <a className="category-card" key={category.name} href={`/services/${category.slug}`}><span className={`category-icon ${category.tone}`}><Icon size={23} /></span><span className="category-name">{category.name}</span><span className="category-detail">{category.detail}</span><ArrowRight className="category-arrow" size={18} /></a>; })}</div></section>
 
-      <section className="section professionals" id="professionals"><div className="section-heading"><div><span className="kicker">People who make it happen</span><h2>Meet your local<br /><span>professionals.</span></h2></div><button type="button" className="link-button" onClick={browseProfessionals}>{showAllProfessionals ? "Show less" : "All professionals"} <ArrowRight size={17} /></button></div>{notice && <div className="notice"><Check size={17} /> {notice}</div>}<div className="worker-grid">{filteredWorkers.length ? filteredWorkers.map((worker) => <article className="worker-card" key={worker.id || worker.name}><div className="worker-top"><div className="avatar" style={{ background: worker.color }}>{worker.initials}</div><span className="available"><span /> Available</span></div><h3>{worker.name} <BadgeCheck className="verified" size={17} /></h3><p className="worker-role">{worker.role}</p><p className="worker-skills">{worker.skills}</p><div className="worker-meta"><span><Star size={15} fill="currentColor" /> {worker.rating} <small>({worker.jobs})</small></span><span><MapPin size={14} /> {worker.distance}</span></div><div className="worker-bottom"><strong>{worker.price} <small>starting</small></strong>{worker.id ? <a className="outline-button" href={`/professionals/${worker.id}`}>View profile</a> : <a className="outline-button" href="/register">Create account to view</a>}</div></article>) : <div className="empty-state"><Search size={24} /><strong>No professionals found yet</strong><span>Try a category like electrician, cleaning, or carpenter.</span></div>}</div></section>
+      <section className="section professionals" id="professionals"><div className="section-heading"><div><span className="kicker">People who make it happen</span><h2>Meet your local<br /><span>professionals.</span></h2></div><button type="button" className="link-button" onClick={browseProfessionals}>{showAllProfessionals ? "Show less" : "All professionals"} <ArrowRight size={17} /></button></div>{notice && <div className="notice"><Check size={17} /> {notice}</div>}{searchSubmitted ? <div className="worker-grid">{filteredWorkers.length ? filteredWorkers.map((worker) => <article className="worker-card" key={worker.id || worker.name}><div className="worker-top"><div className="avatar" style={{ background: worker.color }}>{worker.initials}</div><span className="available"><span /> Available</span></div><h3>{worker.name} <BadgeCheck className="verified" size={17} /></h3><p className="worker-role">{worker.role}</p><p className="worker-skills">{worker.skills}</p><div className="worker-meta"><span><Star size={15} fill="currentColor" /> {worker.rating} <small>({worker.jobs})</small></span><span><MapPin size={14} /> {worker.distance}</span></div><div className="worker-bottom"><strong>{worker.price} <small>starting</small></strong>{worker.id ? <a className="outline-button" href={`/professionals/${worker.id}`}>View profile</a> : <a className="outline-button" href="/register">Create account to view</a>}</div></article>) : <div className="empty-state"><Search size={24} /><strong>No professionals found yet</strong><span>Try a category like electrician, cleaning, or carpenter.</span></div>}</div> : <div className="empty-state"><Search size={24} /><strong>Search to find professionals</strong><span>Choose a service and location, then click Search.</span></div>}</section>
 
       <section className="how-section" id="how-it-works"><div className="steps-brand-box"><SevaSetuLogo className="navbar-logo" /></div><div className="how-inner"><div><span className="kicker light">A better way to get things done</span><h2>From “I need help”<br />to <em>“all sorted.”</em></h2><p>SevaSetu makes finding and hiring local help feel straightforward, transparent, and human.</p></div><div className="steps"><div><span>01</span><div><h3>Tell us what you need</h3><p>Search by service, skill, or simply describe the job.</p></div></div><div><span>02</span><div><h3>Choose with confidence</h3><p>Compare real profiles, prices, availability, and reviews.</p></div></div><div><span>03</span><div><h3>Get it done</h3><p>Request, chat, track progress, and review the work.</p></div></div></div></div></section>
 

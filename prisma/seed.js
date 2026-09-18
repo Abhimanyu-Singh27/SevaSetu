@@ -6,6 +6,10 @@ const services = [
   ["Cleaning", "cleaning", ["House cleaning", "Garden cleaning", "Water-tank cleaning"]],
   ["Moving & delivery", "moving-delivery", ["Moving help", "Loading and unloading", "Local delivery"]],
   ["Construction", "construction", ["Carpentry", "Painting", "Masonry"]],
+  ["Garden care", "garden-care", ["Garden care"]],
+  ["Pest control", "pest-control", ["Pest control"]],
+  ["Car wash", "car-wash", ["Car wash"]],
+  ["Event help", "event-help", ["Event help"]],
 ];
 
 async function main() {

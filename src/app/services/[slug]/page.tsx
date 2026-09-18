@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 export default async function ServiceDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const service = await prisma.service.findFirst({
-    where: { slug, active: true },
+    where: { OR: [{ slug }, { category: { slug } }], active: true },
     include: {
       category: true,
       workers: {

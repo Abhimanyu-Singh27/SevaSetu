@@ -23,6 +23,9 @@ export async function POST(request: Request) {
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) return NextResponse.json({ error: "Enter a valid email address" }, { status: 400 });
     if (!password) return NextResponse.json({ error: "Password is required" }, { status: 400 });
 
+    const activeAdmin = await prisma.session.count({ where: { revokedAt: null, expiresAt: { gt: new Date() }, user: { role: "ADMIN", status: "ACTIVE" } } });
+    if (activeAdmin > 0) return NextResponse.json({ error: "An administrator is already signed in. Sign out before using administrator access." }, { status: 409 });
+
     if (action === "create") {
       if (password.length < 10) return NextResponse.json({ error: "Password must be at least 10 characters" }, { status: 400 });
       if (fullName.length < 2 || fullName.length > 120) return NextResponse.json({ error: "Enter your full name" }, { status: 400 });
