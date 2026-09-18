@@ -3,6 +3,17 @@ import { ArrowLeft, BadgeCheck, Clock3, MapPin, Star, Users } from "lucide-react
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
+const fallbackServices: Record<string, { name: string; description: string; points: string[] }> = {
+  "home-repairs": { name: "Home repairs", description: "Reliable help for electrical, plumbing, appliance, and everyday household repairs.", points: ["Electrical and plumbing support", "Appliance and fixture repairs", "Clear pricing before work starts", "Verified local professionals"] },
+  cleaning: { name: "Cleaning", description: "Dependable cleaning professionals for homes, kitchens, move-outs, and more.", points: ["Routine and deep cleaning", "Kitchen and move-out cleaning", "Flexible scheduling", "Customer ratings and feedback"] },
+  "moving-delivery": { name: "Moving & delivery", description: "Careful local help for moving, loading, unloading, and delivery jobs.", points: ["Loading and unloading", "Local delivery support", "Careful handling of belongings", "Upfront service details"] },
+  construction: { name: "Construction", description: "Skilled professionals for carpentry, painting, masonry, and improvement work.", points: ["Carpentry and masonry", "Painting and finishing", "Practical job assessments", "Experienced local workers"] },
+  "garden-care": { name: "Garden care", description: "Keep outdoor spaces healthy and welcoming with dependable garden care.", points: ["Garden maintenance", "Plant and outdoor care", "Seasonal cleanup", "Local availability"] },
+  "pest-control": { name: "Pest control", description: "Get help addressing common household and outdoor pest concerns safely.", points: ["Home pest inspections", "Targeted treatment planning", "Safety-conscious service", "Clear recommendations"] },
+  "car-wash": { name: "Car wash", description: "Convenient vehicle cleaning from local professionals prepared for the job.", points: ["Exterior cleaning", "Interior care", "At-home convenience", "Flexible appointment times"] },
+  "event-help": { name: "Event help", description: "Reliable extra hands for setup, serving, coordination, and special occasions.", points: ["Event setup assistance", "Serving and coordination", "Flexible support", "Dependable local help"] },
+};
+
 export default async function ServiceDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const service = await prisma.service.findFirst({
@@ -15,8 +26,15 @@ export default async function ServiceDetailsPage({ params }: { params: Promise<{
         orderBy: { worker: { ratingAverage: "desc" } },
       },
     },
+  }).catch((error) => {
+    console.error("Public service lookup failed", error);
+    return null;
   });
-  if (!service) notFound();
+  if (!service) {
+    const fallback = fallbackServices[slug];
+    if (!fallback) notFound();
+    return <main className="auth-page"><section className="auth-card service-details-page"><Link className="back-link" href="/#services"><ArrowLeft size={15} /> Back to services</Link><div className="auth-intro"><span className="portal-icon"><BadgeCheck size={19} /></span><span className="kicker">SevaSetu service</span><h1>{fallback.name}</h1><p>{fallback.description}</p></div><div className="workspace-stats"><div><strong>0</strong><span><Users size={13} /> Professionals listed</span></div><div><strong>Quote</strong><span>Starting price</span></div><div><strong>Flexible</strong><span>Schedule</span></div></div><section className="profile-details"><h2>What to expect</h2><p>Share your requirements, preferred timing, and location. A suitable professional can review the job and confirm the details before work begins.</p><div className="service-detail-points">{fallback.points.map((point) => <span key={point}>✓ {point}</span>)}</div></section><section className="profile-details"><h2>Professionals are joining this service</h2><p>No profiles are listed yet. Create an account to describe your job and receive updates when local help becomes available.</p></section><Link className="button auth-submit" href="/register">Create an account to request this service <ArrowLeft size={17} className="rotate-180" /></Link></section></main>;
+  }
 
   const prices = service.workers.map((worker) => worker.price).filter((price): price is NonNullable<typeof price> => price !== null).map(Number);
   const lowestPrice = prices.length ? Math.min(...prices) : null;
