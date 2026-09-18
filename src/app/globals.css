@@ -637,6 +637,9 @@ button {
 
 .hero {
     background: linear-gradient(120deg, #eaf4f8 0%, #f7fbfc 57%, #ecf8f1 100%);
+    display: grid;
+    gap: clamp(28px, 4vw, 72px);
+    grid-template-columns: minmax(0, 1fr) minmax(200px, 235px);
     min-height: 504px;
     overflow: hidden;
     padding: 88px clamp(22px, 9vw, 150px) 80px;
@@ -652,6 +655,7 @@ button {
 }
 
 .hero-copy {
+    min-width: 0;
     position: relative;
     z-index: 1;
 }
@@ -708,6 +712,7 @@ button {
     display: flex;
     max-width: 665px;
     padding: 6px;
+    width: 100%;
 }
 
 .search-field,
@@ -901,6 +906,13 @@ button {
     white-space: nowrap;
 }
 
+.search-feedback {
+    color: #b45345;
+    font-size: 12px;
+    font-weight: 700;
+    margin: 9px 0 0;
+}
+
 .popular {
     align-items: center;
     color: #718399;
@@ -922,9 +934,10 @@ button {
     display: flex;
     flex-direction: column;
     gap: 13px;
-    position: absolute;
-    right: clamp(25px, 9vw, 150px);
-    top: 154px;
+    align-self: start;
+    margin-top: 66px;
+    min-width: 0;
+    position: relative;
     width: 235px;
     z-index: 1;
 }
@@ -1498,6 +1511,7 @@ footer .footer-love svg {
     }
 
     .hero {
+        display: block;
         padding-left: 8vw;
         padding-right: 8vw;
     }
@@ -1551,7 +1565,7 @@ footer .footer-love svg {
     }
 
     .top-actions .text-button {
-        font-size: 11px;
+        display: none;
     }
 
     .top-actions .button-small {
@@ -3621,6 +3635,56 @@ footer .footer-links {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 7px;
+}
+
+.service-catalog {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.service-catalog-item {
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    gap: 12px;
+    padding: 15px 18px;
+}
+
+.service-catalog-item:last-child {
+    border-bottom: 0;
+}
+
+.service-catalog-item:hover {
+    background: var(--background);
+}
+
+.service-catalog-item>div {
+    flex: 1;
+    min-width: 0;
+}
+
+.service-catalog-item strong,
+.service-catalog-item small {
+    display: block;
+}
+
+.service-catalog-item strong {
+    color: var(--navy-deep);
+    font-size: 14px;
+}
+
+.service-catalog-item small {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.4;
+    margin-top: 4px;
+}
+
+.service-catalog-item>svg {
+    color: var(--muted);
+    flex: 0 0 auto;
 }
 
 .workspace-row {

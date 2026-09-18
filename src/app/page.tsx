@@ -51,6 +51,7 @@ export default function Home() {
   const [searchSubmitted, setSearchSubmitted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notice, setNotice] = useState("");
+  const [searchMessage, setSearchMessage] = useState("");
   const [workers, setWorkers] = useState<Array<(typeof demoWorkers)[number] & { id?: string }>>(demoWorkers);
   useEffect(() => {
     const params = new URLSearchParams({ limit: showAllProfessionals ? "50" : "12" });
@@ -63,12 +64,17 @@ export default function Home() {
   const filteredWorkers = useMemo(() => workers.filter((worker) => `${worker.name} ${worker.role} ${worker.skills}`.toLowerCase().includes(query.toLowerCase())), [workers, query]);
 
   function startSearch() {
-    if (!query.trim() || !location.trim()) {
+    const missingDetails = [
+      !query.trim() ? "what service you need" : "",
+      !location.trim() ? "your location" : "",
+    ].filter(Boolean);
+    if (missingDetails.length) {
       setSearchSubmitted(false);
       setShowAllProfessionals(false);
-      setNotice("Choose a service and location before searching.");
+      setSearchMessage(`Please fill in ${missingDetails.join(" and ")} before searching.`);
       return;
     }
+    setSearchMessage("");
     setSearchSubmitted(true);
     const selectedLocation = location || "your area";
     setNotice(query ? `Showing trusted ${query.toLowerCase()} professionals near ${selectedLocation}.` : `Tell us what you need in ${selectedLocation} to find a match.`);
@@ -108,6 +114,7 @@ export default function Home() {
     const nextLocation = locationDraft.trim();
     if (!nextLocation && !coordinates) return;
     setLocation(nextLocation || `Pinned location (${coordinates?.latitude.toFixed(4)}, ${coordinates?.longitude.toFixed(4)})`);
+    setSearchMessage("");
     setSearchSubmitted(false);
     setShowAllProfessionals(false);
     setLocationPickerOpen(false);
@@ -129,8 +136,8 @@ export default function Home() {
       <section className="hero" id="top">
         <div className="hero-orbit orbit-one" /><div className="hero-orbit orbit-two" />
         <div className="hero-copy"><div className="eyebrow"><span className="eyebrow-dot" /> Local help, made simple</div><h1>Good work is <em>closer</em> than you think.</h1><p>Find skilled, verified professionals for the jobs that keep your home and life moving.</p>
-          <div className="search-panel"><div className="search-field"><Search size={19} /><input value={query} onChange={(event) => { setQuery(event.target.value); setSearchSubmitted(false); setShowAllProfessionals(false); }} placeholder="What service do you need?" aria-label="Service needed" /></div><button type="button" className="location-field" onClick={() => { setLocationDraft(location); setLocationPickerOpen(true); }} aria-label="Choose service location"><MapPin size={18} /><span>{location || "Choose your location"}</span></button><button className="button search-button" onClick={startSearch}>Search <ArrowRight size={18} /></button></div>
-          <div className="popular"><span>Popular:</span><button onClick={() => { setQuery("Electrician"); setSearchSubmitted(false); setShowAllProfessionals(false); }}>Electrician</button><button onClick={() => { setQuery("Plumber"); setSearchSubmitted(false); setShowAllProfessionals(false); }}>Plumber</button><button onClick={() => { setQuery("Cleaning"); setSearchSubmitted(false); setShowAllProfessionals(false); }}>Cleaning</button><button onClick={() => { setQuery("Carpenter"); setSearchSubmitted(false); setShowAllProfessionals(false); }}>Carpenter</button></div>
+          <div className="search-panel"><div className="search-field"><Search size={19} /><input value={query} onChange={(event) => { setQuery(event.target.value); setSearchMessage(""); setSearchSubmitted(false); setShowAllProfessionals(false); }} placeholder="What service do you need?" aria-label="Service needed" /></div><button type="button" className="location-field" onClick={() => { setLocationDraft(location); setSearchMessage(""); setLocationPickerOpen(true); }} aria-label="Choose service location"><MapPin size={18} /><span>{location || "Choose your location"}</span></button><button className="button search-button" onClick={startSearch}>Search <ArrowRight size={18} /></button></div>{searchMessage && <p className="search-feedback" role="alert">{searchMessage}</p>}
+          <div className="popular"><span>Popular:</span><button onClick={() => { setQuery("Electrician"); setSearchMessage(""); setSearchSubmitted(false); setShowAllProfessionals(false); }}>Electrician</button><button onClick={() => { setQuery("Plumber"); setSearchMessage(""); setSearchSubmitted(false); setShowAllProfessionals(false); }}>Plumber</button><button onClick={() => { setQuery("Cleaning"); setSearchMessage(""); setSearchSubmitted(false); setShowAllProfessionals(false); }}>Cleaning</button><button onClick={() => { setQuery("Carpenter"); setSearchMessage(""); setSearchSubmitted(false); setShowAllProfessionals(false); }}>Carpenter</button></div>
         </div>
         <div className="hero-aside"><div className="trust-card"><div className="trust-icon"><ShieldCheck size={23} /></div><div><strong>Service you can trust</strong><span>Every professional is reviewed by our community.</span></div></div><div className="hero-stat"><strong>4.8<span>/5</span></strong><div><div className="stars">★★★★★</div><small>Average community rating</small></div></div></div>
       </section>
