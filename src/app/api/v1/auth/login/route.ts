@@ -15,6 +15,8 @@ export async function POST(request: Request) {
     const email = String(body.email || "").trim().toLowerCase();
     const password = String(body.password || "");
     if (!email || !password) return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+    const accountLimit = await rateLimit(`auth:login:email:${email}`, 10, 900);
+    if (!accountLimit.allowed) return NextResponse.json({ error: "Too many sign-in attempts. Try again later." }, { status: 429, headers: { "Retry-After": String(accountLimit.retryAfterSeconds) } });
     const user = await prisma.user.findUnique({ where: { email }, select: { id: true, email: true, passwordHash: true, role: true, status: true, emailVerifiedAt: true } });
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     if (user.status !== "ACTIVE") return NextResponse.json({ error: "This account is not currently active" }, { status: 403 });

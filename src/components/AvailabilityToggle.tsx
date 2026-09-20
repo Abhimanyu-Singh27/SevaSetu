@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { portalText } from "@/lib/portal-i18n";
 
-export function AvailabilityToggle({ initial }: { initial: string }) {
+export function AvailabilityToggle({ initial, language = "en" }: { initial: string; language?: string }) {
   const [availability, setAvailability] = useState(initial);
   const [busy, setBusy] = useState(false);
   const next = availability === "AVAILABLE" ? "BUSY" : availability === "BUSY" ? "OFFLINE" : "AVAILABLE";
@@ -12,5 +13,5 @@ export function AvailabilityToggle({ initial }: { initial: string }) {
     if (response.ok) setAvailability(next);
     setBusy(false);
   }
-  return <div className="worker-status-row"><span><span className={`availability-dot ${availability.toLowerCase()}`} />{availability.replaceAll("_", " ")}</span><button type="button" onClick={change} disabled={busy}>{busy ? "Saving..." : `Set ${next.toLowerCase()}`}</button></div>;
+  return <div className="worker-status-row"><span><span className={`availability-dot ${availability.toLowerCase()}`} />{availability.replaceAll("_", " ")}</span><button type="button" onClick={change} disabled={busy}>{busy ? portalText(language, "savingAction") : portalText(language, "setStatus", { status: next.toLowerCase() })}</button></div>;
 }

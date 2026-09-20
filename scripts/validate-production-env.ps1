@@ -3,10 +3,10 @@ $ErrorActionPreference = "Stop"
 $required = @(
   "DATABASE_URL",
   "SESSION_SECRET",
+  "ADMIN_BOOTSTRAP_SECRET",
   "NEXT_PUBLIC_APP_URL",
   "UPSTASH_REDIS_REST_URL",
   "UPSTASH_REDIS_REST_TOKEN",
-  "RESEND_API_KEY",
   "EMAIL_FROM",
   "MFA_ENCRYPTION_KEY",
   "S3_ENDPOINT",
@@ -18,6 +18,7 @@ $required = @(
 
 $missing = @($required | Where-Object { -not [Environment]::GetEnvironmentVariable($_) })
 if ($missing.Count -gt 0) { throw "Missing production variables: $($missing -join ', ')" }
+if (-not $env:BREVO_API_KEY -and -not $env:RESEND_API_KEY) { throw "Set BREVO_API_KEY or RESEND_API_KEY for email delivery" }
 if ($env:NEXT_PUBLIC_APP_URL -notmatch '^https://') { throw "NEXT_PUBLIC_APP_URL must use HTTPS" }
 if ($env:MFA_ENCRYPTION_KEY.Length -lt 32) { throw "MFA_ENCRYPTION_KEY must be at least 32 characters" }
 Write-Output "Production environment configuration is present."

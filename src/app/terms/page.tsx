@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function TermsPage() {
-  return <main className="state-page"><article className="state-panel"><span className="kicker">SevaSetu</span><h1>Terms of Service</h1><p>Users must provide accurate information, protect their credentials, and use SevaSetu lawfully. Customers and workers are responsible for confirming service details before work begins.</p><p>SevaSetu may suspend accounts, requests, or content for safety, fraud, abuse, or policy violations. The final commercial and legal terms must be reviewed and approved before public launch.</p><a className="button" href="/">Return home</a></article></main>;
+  return <main className="state-page"><article className="state-panel"><span className="kicker">SevaSetu</span><h1>Terms of Service</h1><p>Users must provide accurate information, protect their credentials, and use SevaSetu lawfully. Customers and workers are responsible for confirming service details before work begins.</p><p>SevaSetu may suspend accounts, requests, or content for safety, fraud, abuse, or policy violations. The final commercial and legal terms must be reviewed and approved before public launch.</p><Link className="button" href="/">Return home</Link></article></main>;
 }

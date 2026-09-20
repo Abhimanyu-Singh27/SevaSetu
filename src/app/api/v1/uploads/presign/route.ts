@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createObjectKey, presignObject } from "@/lib/storage";
+import { rateLimit } from "@/lib/rate-limit";
 
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 const maxBytes = 10 * 1024 * 1024;
@@ -9,6 +10,8 @@ const maxBytes = 10 * 1024 * 1024;
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  const limit = await rateLimit(`uploads:presign:${session.userId}`, 30, 3600);
+  if (!limit.allowed) return NextResponse.json({ error: "Too many upload attempts. Try again later." }, { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } });
   const body = await request.json().catch(() => ({}));
   const fileName = String(body.fileName || "").trim();
   const contentType = String(body.contentType || "").toLowerCase();

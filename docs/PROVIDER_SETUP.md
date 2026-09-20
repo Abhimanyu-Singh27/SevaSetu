@@ -68,9 +68,9 @@ Required secrets are listed in `.env.example`. Run `scripts/validate-production-
 
 ## 7. Transactional email
 
-1. Create a Resend account and verify a sending domain when available.
+1. Create a Brevo or Resend account and verify a sending domain when available.
 2. For initial testing, use the provider's permitted test sender and verified recipient.
-3. Set `RESEND_API_KEY` and `EMAIL_FROM` separately in staging and production.
+3. Set `BREVO_API_KEY` or `RESEND_API_KEY`, plus `EMAIL_FROM`, separately in staging and production. Brevo is used when both keys are present; Resend remains available for a future domain migration.
 4. Test registration verification, password reset, bounce handling, and delivery logs.
 
 Do not invite real users until the production sending domain is verified.

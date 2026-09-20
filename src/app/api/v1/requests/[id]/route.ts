@@ -6,10 +6,11 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   const { id } = await params;
-  const record = await prisma.serviceRequest.findUnique({ where: { id }, select: { customer: { select: { userId: true } }, worker: { select: { userId: true } } } });
+  const record = await prisma.serviceRequest.findUnique({ where: { id }, select: { status: true, customer: { select: { userId: true } }, worker: { select: { userId: true } } } });
   if (!record) return NextResponse.json({ error: "Request not found" }, { status: 404 });
   const allowed = session.role === "ADMIN" || record.customer.userId === session.userId || record.worker?.userId === session.userId;
   if (!allowed) return NextResponse.json({ error: "You cannot delete this request" }, { status: 403 });
+  if (record.status !== "DRAFT" && record.status !== "CANCELLED") return NextResponse.json({ error: "Only draft or cancelled requests can be deleted" }, { status: 409 });
 
   await prisma.$transaction(async (tx) => {
     const conversation = await tx.conversation.findUnique({ where: { requestId: id }, select: { id: true } });

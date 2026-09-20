@@ -86,6 +86,7 @@ model User {
   role            UserRole
   status          UserStatus   @default(ACTIVE)
   emailVerifiedAt DateTime?
+  preferredLanguage String       @default("en")
   mfaEnabled     Boolean      @default(false)
   mfaSecret      String?
   lastActiveAt    DateTime?

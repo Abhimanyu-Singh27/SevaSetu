@@ -10,7 +10,7 @@ export async function GET() {
     session: Boolean(process.env.SESSION_SECRET),
     appUrl: Boolean(process.env.NEXT_PUBLIC_APP_URL),
     rateLimit: Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN),
-    email: Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM),
+    email: Boolean((process.env.BREVO_API_KEY || process.env.RESEND_API_KEY) && process.env.EMAIL_FROM),
     storage: Boolean(process.env.S3_ENDPOINT && process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY),
     uploadScanner: Boolean(process.env.UPLOAD_SCANNER_URL),
     realtime: Boolean(process.env.WEBSOCKET_PUBLISH_URL || (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)),

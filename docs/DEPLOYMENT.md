@@ -4,6 +4,17 @@
 
 Use separate Vercel projects or Vercel environments for `staging` and `production`, with separate PostgreSQL databases, Redis namespaces, object-storage buckets, scanner credentials, email domains, and secrets. Never point staging at production data.
 
+## Local database prerequisite
+
+Account creation requires PostgreSQL. With Docker Desktop installed, start the local database from the SevaSetu folder:
+
+```powershell
+docker compose up -d postgres
+npx prisma migrate deploy
+```
+
+Confirm port `5432` is listening before opening the registration page. If Docker is unavailable, use a managed PostgreSQL connection in `.env` and run `npx prisma migrate deploy`.
+
 ## Required providers
 
 - Managed PostgreSQL with connection pooling, automated backups, and point-in-time recovery.
@@ -12,7 +23,7 @@ Use separate Vercel projects or Vercel environments for `staging` and `productio
 - Malware scanning service reachable through `UPLOAD_SCANNER_URL`.
 - HTTPS domain/CDN through Vercel or another TLS-capable edge provider.
 - Secret manager for all values in `.env.example`; do not place production secrets in GitHub or source files.
-- Resend or another transactional email provider with a verified sending domain.
+- Brevo or Resend transactional email with a verified sender/domain.
 - Monitoring provider connected to `/api/health`, application errors, database errors, email failures, scanner failures, and elevated 4xx/5xx rates.
 
 ## Staging release

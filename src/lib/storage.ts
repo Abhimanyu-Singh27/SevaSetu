@@ -46,10 +46,14 @@ export function presignObject(method: "PUT" | "HEAD", key: string, contentType?:
   return { url: `${values.endpoint}/${values.bucket}${keyPath(key)}?${query.toString()}`, headers: contentType ? { "Content-Type": contentType } : {} };
 }
 
-export async function verifyObjectExists(key: string) {
+export async function getObjectMetadata(key: string) {
   const signed = presignObject("HEAD", key);
   const response = await fetch(signed.url, { method: "HEAD", cache: "no-store" });
-  return response.ok;
+  if (!response.ok) return null;
+  const contentLength = Number(response.headers.get("content-length"));
+  const contentType = response.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase() || "";
+  if (!Number.isSafeInteger(contentLength) || contentLength < 1 || !contentType) return null;
+  return { sizeBytes: contentLength, contentType };
 }
 
 export async function scanObject(key: string) {

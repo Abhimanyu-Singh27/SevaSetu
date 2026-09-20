@@ -5,16 +5,19 @@ import { type RequestStatusAction } from "@/lib/realtime";
 import { beginIdempotency, completeIdempotency } from "@/lib/idempotency";
 import { recordRealtimeEvent } from "@/lib/realtime-events";
 
-const transitions: Record<RequestStatusAction, { next: "SUBMITTED" | "ACCEPTED" | "REJECTED" | "SCHEDULED" | "EN_ROUTE" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "DISPUTED"; roles: AppRole[] }> = {
-  submit: { next: "SUBMITTED", roles: ["CUSTOMER"] },
-  accept: { next: "ACCEPTED", roles: ["WORKER"] },
-  reject: { next: "REJECTED", roles: ["WORKER"] },
-  schedule: { next: "SCHEDULED", roles: ["WORKER"] },
-  en_route: { next: "EN_ROUTE", roles: ["WORKER"] },
-  start: { next: "IN_PROGRESS", roles: ["WORKER"] },
-  complete: { next: "COMPLETED", roles: ["WORKER"] },
-  cancel: { next: "CANCELLED", roles: ["CUSTOMER", "WORKER"] },
-  dispute: { next: "DISPUTED", roles: ["CUSTOMER", "WORKER"] },
+type OpenRequestStatus = "DRAFT" | "SUBMITTED" | "ACCEPTED" | "SCHEDULED" | "EN_ROUTE" | "IN_PROGRESS";
+type RequestStatus = OpenRequestStatus | "REJECTED" | "COMPLETED" | "CANCELLED" | "DISPUTED";
+
+const transitions: Record<RequestStatusAction, { next: RequestStatus; from: RequestStatus[]; roles: AppRole[] }> = {
+  submit: { next: "SUBMITTED", from: ["DRAFT"], roles: ["CUSTOMER"] },
+  accept: { next: "ACCEPTED", from: ["SUBMITTED"], roles: ["WORKER"] },
+  reject: { next: "REJECTED", from: ["SUBMITTED"], roles: ["WORKER"] },
+  schedule: { next: "SCHEDULED", from: ["ACCEPTED"], roles: ["WORKER"] },
+  en_route: { next: "EN_ROUTE", from: ["SCHEDULED"], roles: ["WORKER"] },
+  start: { next: "IN_PROGRESS", from: ["EN_ROUTE"], roles: ["WORKER"] },
+  complete: { next: "COMPLETED", from: ["IN_PROGRESS"], roles: ["WORKER"] },
+  cancel: { next: "CANCELLED", from: ["DRAFT", "SUBMITTED", "ACCEPTED", "SCHEDULED", "EN_ROUTE", "IN_PROGRESS"], roles: ["CUSTOMER", "WORKER"] },
+  dispute: { next: "DISPUTED", from: ["SUBMITTED", "ACCEPTED", "SCHEDULED", "EN_ROUTE", "IN_PROGRESS"], roles: ["CUSTOMER", "WORKER"] },
 };
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -33,7 +36,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (session.role !== "ADMIN" && !isCustomer && !isWorker) return NextResponse.json({ error: "You do not have access to this request" }, { status: 403 });
   if (session.role === "CUSTOMER" && action !== "cancel" && action !== "dispute") return NextResponse.json({ error: "Customers cannot perform that transition" }, { status: 403 });
   if (session.role === "WORKER" && !isWorker) return NextResponse.json({ error: "Only the assigned worker can perform that transition" }, { status: 403 });
-  if (["COMPLETED", "CANCELLED", "DISPUTED"].includes(existing.status)) return NextResponse.json({ error: "This request is already closed" }, { status: 409 });
+  if (!transition.from.includes(existing.status as RequestStatus)) return NextResponse.json({ error: `Cannot ${action.replaceAll("_", " ")} a request in ${existing.status.toLowerCase().replaceAll("_", " ")} state.` }, { status: 409 });
 
   const idempotencyKey = request.headers.get("Idempotency-Key");
   const idempotency = idempotencyKey ? await beginIdempotency(session.userId, `POST:/api/v1/requests/${id}/status`, idempotencyKey) : {};

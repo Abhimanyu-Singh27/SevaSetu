@@ -12,7 +12,7 @@ export async function beginIdempotency(userId: string, route: string, key: strin
   try {
     const record = await prisma.idempotencyKey.create({ data: { id: randomUUID(), userId, route, key: normalized, expiresAt } });
     return { recordId: record.id };
-  } catch (error) {
+  } catch {
     const existing = await prisma.idempotencyKey.findUnique({ where: { userId_route_key: { userId, route, key: normalized } }, select: { id: true, responseStatus: true, responseBody: true, expiresAt: true } });
     if (!existing || existing.expiresAt <= new Date()) return {};
     if (existing.responseStatus === null || existing.responseBody === null) return { replay: { status: 409, body: { error: "This request is already being processed" } } };

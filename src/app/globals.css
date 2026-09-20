@@ -183,64 +183,6 @@ body {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 14px;
-
-    .messages-layout {
-        display: grid;
-        gap: 20px;
-        grid-template-columns: minmax(220px, .8fr) minmax(0, 1.4fr);
-    }
-
-    .message-conversation {
-        border: 0;
-        cursor: pointer;
-        text-align: left;
-        width: 100%;
-    }
-
-    .message-thread {
-        min-height: 420px;
-        padding: 22px;
-    }
-
-    .message-thread h2 {
-        margin-top: 0;
-    }
-
-    .message-list {
-        display: grid;
-        gap: 10px;
-        margin: 22px 0;
-        max-height: 300px;
-        overflow: auto;
-    }
-
-    .message-list p {
-        background: var(--background);
-        border-radius: 10px;
-        margin: 0;
-        padding: 10px 12px;
-    }
-
-    .message-list small {
-        color: var(--muted);
-        display: block;
-        font-size: 10px;
-        margin-top: 5px;
-    }
-
-    .message-compose {
-        display: flex;
-        gap: 8px;
-    }
-
-    .message-compose input {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        flex: 1;
-        min-width: 0;
-        padding: 10px;
-    }
-
     box-shadow: 0 18px 45px rgba(15, 23, 42, .08);
     max-width: 520px;
     padding: 36px;
@@ -255,6 +197,188 @@ body {
 .state-panel p {
     color: var(--muted);
     margin: 0 0 24px;
+}
+
+.messages-layout {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: minmax(220px, .8fr) minmax(0, 1.4fr);
+}
+
+.message-conversation {
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+}
+
+.message-thread {
+    min-height: 420px;
+    padding: 22px;
+}
+
+.message-thread h2 {
+    margin-top: 0;
+}
+
+.message-list {
+    display: grid;
+    gap: 10px;
+    margin: 22px 0;
+    max-height: 300px;
+    overflow: auto;
+}
+
+.message-list p {
+    background: var(--background);
+    border-radius: 10px;
+    margin: 0;
+    padding: 10px 12px;
+}
+
+.message-list small {
+    color: var(--muted);
+    display: block;
+    font-size: 10px;
+    margin-top: 5px;
+}
+
+.message-compose {
+    display: flex;
+    gap: 8px;
+}
+
+.message-compose input {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    flex: 1;
+    min-width: 0;
+    padding: 10px;
+}
+
+.verification-panel {
+    max-width: 560px;
+    padding: clamp(28px, 5vw, 48px);
+    text-align: left;
+}
+
+.verification-header {
+    margin-bottom: 28px;
+    text-align: center;
+}
+
+.verification-mark {
+    align-items: center;
+    background: #dff7ef;
+    border-radius: 16px;
+    color: #078765;
+    display: inline-flex;
+    height: 56px;
+    justify-content: center;
+    margin-bottom: 16px;
+    width: 56px;
+}
+
+.verification-header h1 {
+    color: var(--ink);
+    font-size: clamp(25px, 4vw, 32px);
+    line-height: 1.15;
+    margin: 0 0 10px;
+}
+
+.verification-header p {
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.verification-form {
+    display: grid;
+    gap: 18px;
+}
+
+.verification-form label {
+    color: var(--ink);
+    display: grid;
+    font-size: 13px;
+    font-weight: 700;
+    gap: 8px;
+}
+
+.verification-form input {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--ink);
+    font: inherit;
+    min-height: 48px;
+    padding: 12px 14px;
+    width: 100%;
+}
+
+.verification-form input:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(0, 184, 148, .14);
+    outline: 0;
+}
+
+.verification-code-input {
+    font-size: 24px !important;
+    font-weight: 800;
+    letter-spacing: 7px;
+    text-align: center;
+}
+
+.verification-actions {
+    display: grid;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.verification-actions .button {
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+}
+
+.verification-timer {
+    color: var(--muted);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
+.verification-resend:disabled {
+    cursor: not-allowed;
+    opacity: .5;
+}
+
+.verification-success {
+    text-align: center;
+}
+
+.verification-success .verification-mark {
+    background: #dff7ef;
+}
+
+.verification-message.error {
+    background: #fff1ef;
+    border: 1px solid #f3c5be;
+    border-radius: 9px;
+    color: #a33f32;
+    font-size: 13px;
+    margin: 0;
+    padding: 11px 13px;
+}
+
+.verification-message.success {
+    background: #eafaf4;
+    border: 1px solid #b9ead7;
+    border-radius: 9px;
+    color: #087b5e;
+    font-size: 13px;
+    margin: 0;
+    padding: 11px 13px;
 }
 
 .sidebar-badge {
@@ -277,6 +401,14 @@ body {
 
     .skeleton-content-grid {
         grid-template-columns: 1fr;
+    }
+
+    .verification-panel {
+        padding: 28px 20px;
+    }
+
+    .verification-code-input {
+        letter-spacing: 5px;
     }
 }
 
@@ -1846,6 +1978,58 @@ footer .footer-love svg {
     padding: 11px 13px 0;
 }
 
+.language-row {
+    clear: both;
+    color: #afc1d3;
+    display: grid;
+    font-size: 12px;
+    gap: 7px;
+    padding: 14px 13px 0;
+}
+
+.language-row>span {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+}
+
+.language-row select {
+    background: #203d58;
+    border: 1px solid #45627d;
+    border-radius: 5px;
+    color: #eef6ff;
+    font: inherit;
+    min-height: 32px;
+    padding: 5px 8px;
+    width: 100%;
+}
+
+.language-row small {
+    color: #8edfc4;
+    font-size: 11px;
+}
+
+.public-language-picker {
+    align-items: center;
+    color: var(--muted);
+    display: inline-flex;
+    gap: 6px;
+}
+
+.public-language-picker select {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    min-height: 30px;
+    padding: 3px 2px;
+}
+
+.public-language-picker select:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+}
+
 .theme-toggle {
     background: #34506c;
     border-radius: 99px;
@@ -2104,6 +2288,12 @@ footer .footer-love svg {
         display: inline-flex;
         float: right;
         padding: 8px 0;
+    }
+
+    .language-row {
+        clear: both;
+        margin-top: 8px;
+        max-width: 220px;
     }
 
     .portal-main {

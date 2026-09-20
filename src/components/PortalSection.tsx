@@ -1,4 +1,4 @@
-import { ArrowLeft, CheckCircle2, ChevronRight, Clock3, FileText, Search, Settings, ShieldCheck, Wrench } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronRight, Clock3, FileText, Settings, ShieldCheck, Wrench } from "lucide-react";
 import Link from "next/link";
 import { AccountSidebar } from "./AccountSidebar";
 import { PortalTopbar } from "./PortalDashboard";
@@ -8,6 +8,7 @@ import { DeleteRequestButton } from "./DeleteRequestButton";
 import { UserStatusButton } from "./UserStatusButton";
 import { RequestStatus, type Prisma } from "@prisma/client";
 import { MessagesPanel } from "./MessagesPanel";
+import { normalizePortalLanguage, portalNavigation } from "@/lib/portal-i18n";
 
 const labels: Record<string, string> = {
   requests: "Service Requests", history: "Service History", messages: "Messages", saved: "Saved Workers", reviews: "Reviews", notifications: "Notifications", profile: "Profile", active: "Active Services", completed: "Completed Services", services: "My Services", pricing: "Skills & Pricing", availability: "Availability", analytics: "Analytics", verification: "Verification", users: "Users", workers: "Workers", categories: "Service Categories", audit: "Audit Logs", reports: "Reports & Complaints",
@@ -18,7 +19,11 @@ type SectionRequest = { id: string; status: RequestStatus; description: string; 
 export async function PortalSection({ role, section }: { role: AppRole; section: string[] }) {
   const session = await requireSession([role]);
   const key = section[0] || "dashboard";
-  const title = labels[key] || "Workspace";
+  const account = await prisma.user.findUnique({ where: { id: session.userId }, include: { customerProfile: true, workerProfile: true } });
+  const language = normalizePortalLanguage(account?.preferredLanguage);
+  const translatedNavigation = portalNavigation(language);
+  const translatedLabels: Record<string, string> = { requests: translatedNavigation.requests, history: translatedNavigation.serviceHistory, messages: translatedNavigation.messages, saved: translatedNavigation.savedWorkers, reviews: translatedNavigation.reviews, notifications: translatedNavigation.notifications, profile: translatedNavigation.profile, active: translatedNavigation.activeServices, completed: translatedNavigation.completedServices, services: translatedNavigation.myServices, pricing: translatedNavigation.skillsPricing, availability: translatedNavigation.availability, analytics: translatedNavigation.analytics, verification: translatedNavigation.verification, settings: translatedNavigation.settings };
+  const title = translatedLabels[key] || labels[key] || "Workspace";
   const requestScope = role === "ADMIN" ? {} : role === "CUSTOMER" ? { customer: { userId: session.userId } } : { worker: { userId: session.userId } };
   const requestFilter: Prisma.ServiceRequestWhereInput = { ...requestScope, ...(key === "completed" || key === "history" ? { status: RequestStatus.COMPLETED } : key === "active" ? { status: { in: [RequestStatus.SUBMITTED, RequestStatus.SENT, RequestStatus.ACCEPTED, RequestStatus.SCHEDULED, RequestStatus.EN_ROUTE, RequestStatus.IN_PROGRESS] } } : {}) };
   const requests = key === "services" ? 0 : await prisma.serviceRequest.count({ where: requestFilter });
@@ -29,7 +34,6 @@ export async function PortalSection({ role, section }: { role: AppRole; section:
   const notificationRows = key === "notifications" ? await prisma.notification.findMany({ where: { userId: session.userId }, orderBy: { createdAt: "desc" }, take: 20, select: { id: true, title: true, body: true, readAt: true, createdAt: true } }) : [];
   const workerAvailability = role === "WORKER" && key === "availability" ? await prisma.workerProfile.findUnique({ where: { userId: session.userId }, select: { availability: true, serviceRadiusKm: true, verificationStatus: true } }) : null;
   const users = role === "ADMIN" && key === "users" ? await prisma.user.findMany({ where: { role: { in: ["CUSTOMER", "WORKER"] } }, include: { customerProfile: { select: { fullName: true } }, workerProfile: { select: { fullName: true } } }, orderBy: { createdAt: "desc" } }) : [];
-  const account = await prisma.user.findUnique({ where: { id: session.userId }, include: { customerProfile: true, workerProfile: true } });
   const profile = key === "profile" ? account : null;
   const name = role === "ADMIN" ? account?.displayName || account?.email.split("@")[0] || "Administrator" : role === "WORKER" ? account?.workerProfile?.fullName || "Worker account" : account?.customerProfile?.fullName || "Customer account";
   const dashboardHref = role === "ADMIN" ? "/admin" : role === "WORKER" ? "/worker" : "/customer";

@@ -11,6 +11,8 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const email = String(body.email || "").trim().toLowerCase();
   if (!/^\S+@\S+\.\S+$/.test(email)) return NextResponse.json({ error: "Enter a valid email address" }, { status: 400 });
+  const accountLimit = await rateLimit(`auth:forgot:email:${email}`, 5, 3600);
+  if (!accountLimit.allowed) return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429, headers: { "Retry-After": String(accountLimit.retryAfterSeconds) } });
   const user = await prisma.user.findUnique({ where: { email }, select: { id: true, email: true } });
   if (user) {
     const token = await issueAuthToken(user.id, "PASSWORD_RESET", 30 * 60 * 1000);

@@ -65,7 +65,7 @@ export async function POST(request: Request) {
   const service = await prisma.service.findFirst({ where: { id: input.serviceId, active: true }, select: { id: true } });
   if (!service) return NextResponse.json({ error: "Service not found" }, { status: 404 });
   if (input.workerId) {
-    const worker = await prisma.workerProfile.findFirst({ where: { id: input.workerId, user: { status: "ACTIVE" } }, select: { id: true } });
+    const worker = await prisma.workerProfile.findFirst({ where: { id: input.workerId, user: { status: "ACTIVE" }, services: { some: { serviceId: input.serviceId } } }, select: { id: true } });
     if (!worker) return NextResponse.json({ error: "Worker not found" }, { status: 404 });
   }
 
