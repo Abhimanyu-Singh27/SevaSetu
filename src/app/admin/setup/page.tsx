@@ -18,13 +18,17 @@ export default function AdminSetupPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("/api/v1/auth/admin-status", { cache: "no-store" }).then((response) => response.json()).then((data) => {
+    fetch("/api/v1/auth/admin-status", { cache: "no-store" }).then(async (response) => {
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Unable to check administrator setup status.");
+      return data;
+    }).then((data) => {
       setAdminExists(Boolean(data.adminExists));
       if (data.adminExists) setMode("LOGIN");
       setActiveAdmin(Boolean(data.activeAdmin));
       setActiveAdminName(data.activeAdminName || "The current administrator");
       setStatusLoaded(true);
-    }).catch(() => { setError("Unable to check administrator setup status."); setStatusLoaded(true); });
+    }).catch((error: Error) => { setError(error.message || "Unable to check administrator setup status."); setStatusLoaded(true); });
   }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {

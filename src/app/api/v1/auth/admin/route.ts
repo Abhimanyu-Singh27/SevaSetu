@@ -10,6 +10,12 @@ import { decryptMfaSecret, verifyTotp } from "@/lib/mfa";
 
 export const runtime = "nodejs";
 
+function configurationError() {
+  if (!process.env.DATABASE_URL) return "Database configuration is missing. Set DATABASE_URL and try again.";
+  if (process.env.NODE_ENV === "production" && (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN)) return "Rate limiting is not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN, then try again.";
+  return null;
+}
+
 function matchesBootstrapSecret(value: string) {
   const configured = process.env.ADMIN_BOOTSTRAP_SECRET;
   if (!configured && process.env.NODE_ENV !== "production") return value === "local-admin-bootstrap";
@@ -19,6 +25,8 @@ function matchesBootstrapSecret(value: string) {
 
 export async function POST(request: Request) {
   try {
+    const configurationMessage = configurationError();
+    if (configurationMessage) return NextResponse.json({ error: configurationMessage }, { status: 503 });
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
     const limit = await rateLimit(`auth:admin:${ip}`, 10, 900);
     if (!limit.allowed) return NextResponse.json({ error: "Too many administrator access attempts. Try again later." }, { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } });
@@ -78,9 +86,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ data: { user: { id: user.id, email: user.email, role: "ADMIN" as AppRole }, redirectUrl: roleHome("ADMIN") } });
   } catch (error) {
     console.error("Administrator access failed", error);
+    if (error && typeof error === "object" && "code" in error && typeof error.code === "string" && error.code.startsWith("P")) {
+      return NextResponse.json({ error: "Administrator access is unavailable because the database is not connected or migrations are missing. Check DATABASE_URL and run Prisma migrations." }, { status: 503 });
+    }
     const message = process.env.NODE_ENV === "production"
-      ? "Unable to process administrator access. Please try again later."
-      : "Unable to process administrator access because the database is unavailable. Start PostgreSQL and try again.";
+      ? "Unable to process administrator access. Check DATABASE_URL, Redis rate-limit configuration, and the deployment logs."
+      : "Unable to process administrator access because the database or local services are unavailable. Start PostgreSQL and Redis, then try again.";
     return NextResponse.json({ error: message }, { status: 503 });
   }
 }
