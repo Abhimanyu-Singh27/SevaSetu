@@ -55,6 +55,99 @@ enum RequestStatus {
   DISPUTED
 }
 
+enum LedgerEntryType {
+  EARNING
+  PLATFORM_FEE
+  REFUND
+  PAYOUT
+}
+
+enum FraudSignalStatus {
+  OPEN
+  REVIEWED
+  DISMISSED
+  CONFIRMED
+}
+
+model FinancialEntry {
+  id          String          @id @default(uuid()) @db.Uuid
+  userId      String          @db.Uuid
+  requestId   String?         @db.Uuid
+  type        LedgerEntryType
+  amount      Decimal         @db.Decimal(12, 2)
+  currency    String          @default("INR")
+  reference   String?
+  createdAt   DateTime        @default(now())
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  request     ServiceRequest? @relation(fields: [requestId], references: [id])
+  @@index([userId, type, createdAt])
+  @@index([requestId, type])
+}
+
+model CompletionProof {
+  id          String         @id @default(uuid()) @db.Uuid
+  requestId   String         @db.Uuid
+  submittedBy String         @db.Uuid
+  note        String?
+  objectKey   String?
+  createdAt   DateTime       @default(now())
+  request     ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  @@index([requestId, createdAt])
+}
+
+model DisputeCase {
+  id          String         @id @default(uuid()) @db.Uuid
+  requestId   String         @unique @db.Uuid
+  openedBy    String         @db.Uuid
+  status      ReportStatus   @default(SUBMITTED)
+  resolution  String?
+  resolvedBy  String?        @db.Uuid
+  resolvedAt  DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  request     ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  @@index([status, createdAt])
+}
+
+model LocationEvent {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  requestId   String?  @db.Uuid
+  latitude    Decimal  @db.Decimal(9, 6)
+  longitude   Decimal  @db.Decimal(9, 6)
+  consented   Boolean  @default(false)
+  retentionUntil DateTime?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt])
+  @@index([requestId, createdAt])
+}
+
+model FraudSignal {
+  id          String            @id @default(uuid()) @db.Uuid
+  userId      String?           @db.Uuid
+  fingerprint String
+  reason      String
+  score       Int               @default(0)
+  status      FraudSignalStatus @default(OPEN)
+  metadata    Json?
+  createdAt   DateTime          @default(now())
+  user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([status, score, createdAt])
+  @@index([fingerprint])
+}
+
+model Broadcast {
+  id          String   @id @default(uuid()) @db.Uuid
+  createdBy   String   @db.Uuid
+  title       String
+  body        String
+  audienceRole UserRole?
+  createdAt   DateTime @default(now())
+  createdByUser User    @relation(fields: [createdBy], references: [id])
+  @@index([createdAt])
+}
+
 enum ReportStatus {
   SUBMITTED
   UNDER_REVIEW
@@ -107,6 +200,10 @@ model User {
   authTokens       AuthToken[]
   idempotencyKeys  IdempotencyKey[]
   realtimeEvents   RealtimeEvent[]
+  financialEntries FinancialEntry[]
+  locationEvents  LocationEvent[]
+  fraudSignals    FraudSignal[]
+  broadcasts      Broadcast[]
 
   @@index([role, status])
   @@index([lastActiveAt])
@@ -266,6 +363,11 @@ model ServiceRequest {
   reports         Report[]
   attachments     FileAsset[]
   conversation     Conversation?
+  completionProofs CompletionProof[]
+  financialEntries FinancialEntry[]
+  dispute          DisputeCase?
+  completedAt      DateTime?
+  completionApprovedAt DateTime?
   @@index([customerId, status, createdAt])
   @@index([workerId, status, createdAt])
 }

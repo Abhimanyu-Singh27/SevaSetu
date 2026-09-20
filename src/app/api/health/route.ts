@@ -17,10 +17,13 @@ export async function GET() {
   };
   try {
     await prisma.$queryRaw`SELECT 1`;
-    const ready = process.env.NODE_ENV !== "production" || Object.values(configuration).every(Boolean);
+    const coreReady = configuration.session && configuration.appUrl && configuration.rateLimit;
+    const ready = process.env.NODE_ENV !== "production" || coreReady;
     return NextResponse.json({
       status: ready ? "ok" : "degraded",
       checks: { database: "ok", configuration },
+      optionalCapabilities: { email: configuration.email, storage: configuration.storage, uploadScanner: configuration.uploadScanner, realtime: configuration.realtime },
+      release: { nodeEnv: process.env.NODE_ENV || "development", version: process.env.npm_package_version || "unknown", commit: process.env.VERCEL_GIT_COMMIT_SHA || "local" },
       latencyMs: Date.now() - startedAt,
       timestamp: new Date().toISOString(),
     }, { status: ready ? 200 : 503 });

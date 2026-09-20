@@ -42,9 +42,6 @@ export async function POST(request: Request) {
     const accountLimit = await rateLimit(`auth:admin:email:${email}`, 10, 900);
     if (!accountLimit.allowed) return NextResponse.json({ error: "Too many administrator access attempts. Try again later." }, { status: 429, headers: { "Retry-After": String(accountLimit.retryAfterSeconds) } });
 
-    const activeAdmin = await prisma.session.count({ where: { revokedAt: null, expiresAt: { gt: new Date() }, user: { role: "ADMIN", status: "ACTIVE" } } });
-    if (activeAdmin > 0) return NextResponse.json({ error: "An administrator is already signed in. Sign out before using administrator access." }, { status: 409 });
-
     if (action === "create") {
       if (!matchesBootstrapSecret(bootstrapSecret)) return NextResponse.json({ error: "Administrator creation requires the configured bootstrap secret." }, { status: 403 });
       if (password.length < 10) return NextResponse.json({ error: "Password must be at least 10 characters" }, { status: 400 });

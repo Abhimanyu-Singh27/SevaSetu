@@ -3,7 +3,7 @@
 :root {
     --navy: #0b3d91;
     --navy-deep: #062552;
-    --teal: #00b894;
+    --teal: #007a63;
     --mint: #4cd1a0;
     --surface: #ffffff;
     --background: #f4f7fa;
@@ -197,6 +197,33 @@ body {
 .state-panel p {
     color: var(--muted);
     margin: 0 0 24px;
+}
+
+.admin-filters {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(180px, 1fr) 160px 160px auto;
+    margin: 24px 0;
+}
+
+.admin-filters input,
+.admin-filters select {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    min-width: 0;
+    padding: 11px 12px;
+}
+
+.user-status-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+@media (max-width: 700px) {
+    .admin-filters {
+        grid-template-columns: 1fr;
+    }
 }
 
 .messages-layout {
@@ -486,7 +513,7 @@ body {
 }
 
 .auth-intro p {
-    color: var(--muted);
+    color: #4d6073;
     font-size: 14px;
     line-height: 1.6;
     margin: 12px auto 0;
@@ -506,7 +533,7 @@ body {
 .auth-card .role-switch button {
     background: transparent;
     border-radius: 7px;
-    color: #617181;
+    color: #40566a;
     font-size: 12px;
     font-weight: 700;
     padding: 11px 8px;
@@ -614,7 +641,7 @@ body {
 }
 
 .auth-foot {
-    color: var(--muted);
+    color: #4d6073;
     font-size: 12px;
     margin: 24px 0 0;
     text-align: center;
@@ -759,7 +786,7 @@ button {
 }
 
 .button:hover {
-    background: #009e80;
+    background: #006653;
     transform: translateY(-2px);
 }
 
@@ -778,6 +805,21 @@ button {
     position: relative;
 }
 
+.public-signature {
+    bottom: clamp(8px, 1.5vw, 18px);
+    display: block;
+    left: clamp(16px, 3vw, 52px);
+    max-height: clamp(120px, 18vw, 220px);
+    max-width: min(36vw, 420px);
+    object-fit: contain;
+    opacity: .75;
+    pointer-events: none;
+    position: absolute;
+    transform: rotate(-2deg);
+    width: auto;
+    z-index: 0;
+}
+
 .hero:after {
     background: radial-gradient(circle at 70% 40%, rgba(76, 209, 160, .2), transparent 33%);
     content: "";
@@ -786,10 +828,14 @@ button {
     position: absolute;
 }
 
-.hero-copy {
-    min-width: 0;
+.hero-copy,
+.hero-aside {
     position: relative;
     z-index: 1;
+}
+
+.hero-copy {
+    min-width: 0;
 }
 
 .eyebrow,
@@ -821,8 +867,14 @@ button {
 }
 
 .hero h1 em,
-.how-section em {
+.hero h1 em {
     color: var(--teal);
+    font-family: Georgia, serif;
+    font-weight: 400;
+}
+
+.how-section em {
+    color: #4cd1a0;
     font-family: Georgia, serif;
     font-weight: 400;
 }
@@ -1030,7 +1082,7 @@ button {
 }
 
 .search-field input::placeholder {
-    color: #98a6b5;
+    color: #5d7186;
 }
 
 .search-button {
@@ -1047,7 +1099,7 @@ button {
 
 .popular {
     align-items: center;
-    color: #718399;
+    color: #52657b;
     display: flex;
     flex-wrap: wrap;
     font-size: 11px;
@@ -1130,19 +1182,19 @@ button {
 }
 
 .hero-stat strong span {
-    color: #9aacbb;
+    color: #52657b;
     font-size: 14px;
     font-weight: 500;
 }
 
 .stars {
-    color: #f5b43a;
+    color: #8a5b00;
     font-size: 13px;
     letter-spacing: 1px;
 }
 
 .hero-stat small {
-    color: #718399;
+    color: #52657b;
     font-size: 9px;
 }
 
@@ -1295,7 +1347,7 @@ button {
 }
 
 .category-detail {
-    color: #8695a6;
+    color: #52657b;
     font-size: 10px;
     line-height: 1.4;
     margin-top: 7px;
@@ -1452,7 +1504,7 @@ button {
     background: white;
     border: 1px dashed #b9cbd6;
     border-radius: 8px;
-    color: #73889b;
+    color: #52657b;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -1587,7 +1639,7 @@ footer {
 }
 
 .steps-brand-box .sevasetu-logo-copy small {
-    color: #52718b;
+    color: #405b70;
     font-size: 11px;
     font-weight: 900;
 }
@@ -2561,6 +2613,7 @@ footer .navbar-logo .reference-logo-crop img {
 }
 
 .auth-brand .sevasetu-logo-copy small {
+    color: #40566a;
     font-size: 11px;
 }
 

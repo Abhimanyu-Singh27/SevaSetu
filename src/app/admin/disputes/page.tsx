@@ -1,0 +1,6 @@
+import Link from "next/link";
+import { requireSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { AdminActionButton } from "@/components/AdminActionButton";
+
+export default async function AdminDisputesPage() { await requireSession(["ADMIN"]); const disputes = await prisma.disputeCase.findMany({ where: { status: { in: ["SUBMITTED", "UNDER_REVIEW", "INVESTIGATING"] } }, orderBy: { createdAt: "asc" }, include: { request: { include: { service: true, customer: true, worker: true } } } }); return <main className="state-page"><section className="state-panel" style={{ maxWidth: 1100, textAlign: "left" }}><Link className="back-link" href="/admin">Dashboard</Link><span className="kicker">Admin workspace</span><h1>Disputes</h1><div className="workspace-table">{disputes.length ? disputes.map((dispute) => <div className="workspace-row" key={dispute.id}><div><strong>{dispute.request.service.name}</strong><small>{dispute.request.customer.fullName} · {dispute.request.worker?.fullName || "Unassigned"} · Opened {dispute.createdAt.toLocaleString("en-IN")}</small></div><span className="status-pill">{dispute.status}</span><AdminActionButton endpoint="/api/v1/admin/disputes" id={dispute.id} status="UNDER_REVIEW" label="Review" /></div>) : <p>No open disputes.</p>}</div></section></main>; }

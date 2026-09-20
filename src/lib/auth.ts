@@ -57,6 +57,10 @@ export async function clearSession() {
   cookieStore.delete(cookieName);
 }
 
+export async function revokeAllSessionsForUser(userId: string) {
+  await prisma.session.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } });
+}
+
 export async function getSession(): Promise<SessionUser | null> {
   try {
     const token = (await cookies()).get(cookieName)?.value;

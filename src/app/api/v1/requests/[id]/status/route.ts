@@ -45,6 +45,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const updated = await prisma.$transaction(async (tx) => {
     const result = await tx.serviceRequest.update({ where: { id }, data: { status: transition.next } });
     await tx.requestStatusHistory.create({ data: { requestId: id, actorId: session.userId, status: transition.next, note: body.note ? String(body.note).slice(0, 500) : undefined } });
+    if (transition.next === "DISPUTED") await tx.disputeCase.upsert({ where: { requestId: id }, create: { requestId: id, openedBy: session.userId }, update: { status: "SUBMITTED", resolution: null, resolvedBy: null, resolvedAt: null } });
     await tx.auditLog.create({ data: { actorId: session.userId, action: "REQUEST_STATUS_CHANGED", targetType: "SERVICE_REQUEST", targetId: id, metadata: { from: existing.status, to: transition.next } } });
     const audience = [existing.customer.userId, ...(existing.worker?.userId ? [existing.worker.userId] : [])].filter((userId) => userId !== session.userId);
     await tx.notification.createMany({ data: audience.map((userId) => ({ userId, type: "REQUEST_UPDATE" as const, title: "Service request updated", body: `${existing.service.name} is now ${transition.next.toLowerCase().replaceAll("_", " ")}.`, data: { requestId: id, status: transition.next } })) });
