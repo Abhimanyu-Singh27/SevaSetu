@@ -23,5 +23,5 @@ export function PublicLanguagePicker({ onLanguageChange }: { onLanguageChange?: 
     onLanguageChange?.(value);
   }
 
-  return <label className="public-language-picker"><Languages aria-hidden="true" size={16} /><span className="sr-only">Language</span><select value={language} onChange={(event) => changeLanguage(event.target.value)} aria-label="Language">{languages.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>;
+  return <label className="public-language-picker"><Languages aria-hidden="true" size={16} /><span className="sr-only">{language === "hi" ? "भाषा" : "Language"}</span><select value={language} onChange={(event) => changeLanguage(event.target.value)} aria-label={language === "hi" ? "भाषा" : "Language"}>{languages.map(([value, label]) => <option value={value} key={value}>{language === "hi" && value === "en" ? "अंग्रेज़ी" : label}</option>)}</select></label>;
 }

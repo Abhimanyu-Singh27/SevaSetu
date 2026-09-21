@@ -11,6 +11,7 @@ const cookieName = "sevasetu_session";
 const sessionSecret = process.env.SESSION_SECRET;
 const persistentSessionAge = 7 * 24 * 60 * 60;
 const adminSessionExpiry = new Date("9999-12-31T23:59:59.999Z");
+const adminSessionMaxAge = 2_147_483_647;
 
 function getSecret() {
   if (!sessionSecret && process.env.NODE_ENV === "production") throw new Error("SESSION_SECRET is required in production");
@@ -40,7 +41,7 @@ export async function setSession(user: SessionUser) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    ...(isAdmin ? { expires: adminSessionExpiry } : { maxAge: persistentSessionAge }),
+    ...(isAdmin ? { maxAge: adminSessionMaxAge } : { maxAge: persistentSessionAge }),
     path: "/",
   });
 }
