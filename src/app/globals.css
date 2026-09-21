@@ -805,21 +805,6 @@ button {
     position: relative;
 }
 
-.public-signature {
-    bottom: clamp(8px, 1.5vw, 18px);
-    display: block;
-    left: clamp(16px, 3vw, 52px);
-    max-height: clamp(120px, 18vw, 220px);
-    max-width: min(36vw, 420px);
-    object-fit: contain;
-    opacity: .75;
-    pointer-events: none;
-    position: absolute;
-    transform: rotate(-2deg);
-    width: auto;
-    z-index: 0;
-}
-
 .hero:after {
     background: radial-gradient(circle at 70% 40%, rgba(76, 209, 160, .2), transparent 33%);
     content: "";
@@ -1919,6 +1904,19 @@ footer .footer-love svg {
 
     .steps-brand-box {
         margin-bottom: 30px;
+        padding: 7px 12px 5px;
+    }
+
+    .steps-brand-box .reference-logo-crop {
+        height: 35px;
+        width: 35px;
+    }
+
+    .steps-brand-box .reference-logo-crop img {
+        height: 51px !important;
+        left: -13px;
+        top: -9px;
+        width: 159px !important;
     }
 
     .steps {
