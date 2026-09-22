@@ -3,10 +3,11 @@ import { PrismaClient } from "@prisma/client";
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function databaseUrl() {
-  const value = process.env.DATABASE_URL;
-  if (!value) {
+  const configuredValue = process.env.DATABASE_URL?.trim();
+  if (!configuredValue) {
     throw new Error("DATABASE_URL is required. Add a PostgreSQL connection string to the Vercel environment before building SevaSetu.");
   }
+  const value = configuredValue.replace(/^["']|["']$/g, "").trim();
 
   let url: URL;
   try {
@@ -17,6 +18,9 @@ function databaseUrl() {
 
   if (url.protocol !== "postgresql:" && url.protocol !== "postgres:") {
     throw new Error("DATABASE_URL must use the postgresql:// or postgres:// protocol.");
+  }
+  if (!url.hostname || url.hostname === "localhost" || url.hostname === "127.0.0.1") {
+    throw new Error("DATABASE_URL must point to a hosted PostgreSQL database reachable from Vercel, not localhost.");
   }
 
   if (process.env.NODE_ENV === "production" && !url.searchParams.has("sslmode")) {

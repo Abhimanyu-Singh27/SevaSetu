@@ -27,11 +27,21 @@ export async function GET() {
       latencyMs: Date.now() - startedAt,
       timestamp: new Date().toISOString(),
     }, { status: ready ? 200 : 503 });
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    const reason = message.includes("required") || message.includes("invalid") || message.includes("protocol") || message.includes("localhost")
+      ? "invalid_database_url"
+      : "database_unreachable";
+    console.error("Health database check failed", {
+      reason,
+      name: error instanceof Error ? error.name : "UnknownError",
+      code: typeof error === "object" && error !== null && "code" in error ? String(error.code) : "unknown",
+      message,
+    });
     return NextResponse.json(
       {
         status: "degraded",
-        checks: { database: "unavailable" },
+        checks: { database: "unavailable", reason },
         latencyMs: Date.now() - startedAt,
         timestamp: new Date().toISOString(),
       },
