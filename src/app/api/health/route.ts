@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { databaseDiagnostics, prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,13 +15,14 @@ export async function GET() {
     uploadScanner: Boolean(process.env.UPLOAD_SCANNER_URL),
     realtime: Boolean(process.env.WEBSOCKET_PUBLISH_URL || (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)),
   };
+  const database = databaseDiagnostics();
   try {
     await prisma.$queryRaw`SELECT 1`;
     const coreReady = configuration.session && configuration.appUrl && configuration.rateLimit;
     const ready = process.env.NODE_ENV !== "production" || coreReady;
     return NextResponse.json({
       status: ready ? "ok" : "degraded",
-      checks: { database: "ok", configuration },
+      checks: { database: "ok", configuration, connection: database },
       optionalCapabilities: { email: configuration.email, storage: configuration.storage, uploadScanner: configuration.uploadScanner, realtime: configuration.realtime },
       release: { nodeEnv: process.env.NODE_ENV || "development", version: process.env.npm_package_version || "unknown", commit: process.env.VERCEL_GIT_COMMIT_SHA || "local" },
       latencyMs: Date.now() - startedAt,
@@ -42,7 +43,7 @@ export async function GET() {
     return NextResponse.json(
       {
         status: "degraded",
-        checks: { database: "unavailable", reason, code },
+        checks: { database: "unavailable", reason, code, connection: database },
         latencyMs: Date.now() - startedAt,
         timestamp: new Date().toISOString(),
       },

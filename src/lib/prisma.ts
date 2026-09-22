@@ -7,6 +7,7 @@ function databaseUrl() {
   if (!configuredValue) {
     throw new Error("DATABASE_URL is required. Add a PostgreSQL connection string to the Vercel environment before building SevaSetu.");
   }
+
   const value = configuredValue.replace(/^["']|["']$/g, "").trim();
 
   let url: URL;
@@ -30,6 +31,26 @@ function databaseUrl() {
   if (!url.searchParams.has("connection_limit")) url.searchParams.set("connection_limit", "1");
   if (!url.searchParams.has("pool_timeout")) url.searchParams.set("pool_timeout", "20");
   return url.toString();
+}
+
+export function databaseDiagnostics() {
+  const configuredValue = process.env.DATABASE_URL?.trim();
+  if (!configuredValue) return { configured: false };
+  const value = configuredValue.replace(/^["']|["']$/g, "").trim();
+  try {
+    const url = new URL(value);
+    return {
+      configured: true,
+      protocol: url.protocol,
+      host: url.hostname,
+      port: url.port || "5432",
+      database: url.pathname.replace(/^\//, "").split("?")[0] || "unknown",
+      hasSslMode: Boolean(url.searchParams.get("sslmode")),
+      sslMode: url.searchParams.get("sslmode") || "auto",
+    };
+  } catch {
+    return { configured: true, invalid: true };
+  }
 }
 
 function createPrismaClient() {
