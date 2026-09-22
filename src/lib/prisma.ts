@@ -23,11 +23,27 @@ function databaseUrl() {
   return value;
 }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({
-  datasources: { db: { url: databaseUrl() } },
-  log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
-});
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
+function createPrismaClient() {
+  return new PrismaClient({
+    datasources: { db: { url: databaseUrl() } },
+    log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
+  });
 }
+
+let runtimePrisma = globalForPrisma.prisma;
+
+function getPrismaClient() {
+  if (!runtimePrisma) {
+    runtimePrisma = createPrismaClient();
+    if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = runtimePrisma;
+  }
+  return runtimePrisma;
+}
+
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, property, receiver) {
+    const client = getPrismaClient();
+    const value = Reflect.get(client, property, receiver);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});
