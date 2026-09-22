@@ -9,6 +9,7 @@ import { PortalRefreshButton } from "./PortalRefreshButton";
 import { getSidebarBadges } from "@/lib/sidebar-badges";
 import { normalizePortalLanguage, portalText } from "@/lib/portal-i18n";
 import Link from "next/link";
+import type { Prisma } from "@prisma/client";
 
 type Role = "customer" | "worker" | "admin";
 type RequestRow = { id: string; status: string; description: string; service: { name: string }; updatedAt: Date };
@@ -23,7 +24,7 @@ export async function PortalDashboard({ role }: { role: Role }) {
   const user = await prisma.user.findUnique({ where: { id: session.userId }, include: { customerProfile: true, workerProfile: true } });
   const language = normalizePortalLanguage(user?.preferredLanguage);
   const name = role === "admin" ? user?.displayName || user?.email.split("@")[0] || "Administrator" : role === "worker" ? user?.workerProfile?.fullName || "Worker account" : user?.customerProfile?.fullName || "Customer account";
-  const scope = role === "admin" ? { OR: [{ customer: { user: { status: "ACTIVE" } } }, { worker: { user: { status: "ACTIVE" } } }] } : role === "customer" ? { customer: { userId: session.userId } } : { worker: { userId: session.userId } };
+  const scope: Prisma.ServiceRequestWhereInput = role === "admin" ? { OR: [{ customer: { user: { status: "ACTIVE" } } }, { worker: { user: { status: "ACTIVE" } } }] } : role === "customer" ? { customer: { userId: session.userId } } : { worker: { userId: session.userId } };
   const [total, active, completed, unread, requests, notices] = await Promise.all([
     prisma.serviceRequest.count({ where: scope }),
     prisma.serviceRequest.count({ where: { ...scope, status: { in: ["SUBMITTED", "SENT", "ACCEPTED", "SCHEDULED", "EN_ROUTE", "IN_PROGRESS"] } } }),
