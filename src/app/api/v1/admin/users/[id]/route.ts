@@ -11,6 +11,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     select: {
       id: true,
       email: true,
+      emailVerifiedAt: true,
       displayName: true,
       phone: true,
       role: true,

@@ -41,7 +41,7 @@ Confirm port `5432` is listening before opening the registration page. If Docker
 1. Obtain approval from security, operations, and legal reviewers.
 2. Configure the production secrets in the provider secret manager.
 3. Run `scripts/validate-production-env.ps1` in the deployment environment.
-4. Apply migrations with `npx prisma migrate deploy`.
+4. Apply migrations with `npx prisma migrate deploy`. The Vercel build also applies pending migrations before `next build`.
 5. Deploy the tagged release to the production Vercel project.
 6. Verify `/api/health`, login, email verification, MFA, request creation, chat, uploads, and account deactivation.
 7. Confirm monitoring alerts and rollback instructions before inviting users.

@@ -60,10 +60,9 @@ const navigation: Record<AccountRole, { label: string; href: string; icon: typeo
   admin: [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { label: "Users", href: "/admin/users", icon: Users },
-    { label: "Workers", href: "/admin/workers", icon: BriefcaseBusiness },
     { label: "Verification", href: "/admin/verification", icon: ShieldCheck },
     { label: "Service categories", href: "/admin/categories", icon: FolderKanban },
-    { label: "Service requests", href: "/admin/requests", icon: ClipboardList },
+    { label: "Service requests", href: "/admin?panel=requests", icon: ClipboardList },
     { label: "Finance", href: "/admin/finance", icon: FileText },
     { label: "Fraud signals", href: "/admin/fraud", icon: ShieldCheck },
     { label: "Disputes", href: "/admin/disputes", icon: Bell },

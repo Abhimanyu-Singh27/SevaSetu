@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { GlobalBackButton } from "@/components/GlobalBackButton";
 
 export const metadata: Metadata = {
   title: "SevaSetu | Har Seva, Ek Setu",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body><GlobalBackButton />{children}</body>
     </html>
   );
 }
