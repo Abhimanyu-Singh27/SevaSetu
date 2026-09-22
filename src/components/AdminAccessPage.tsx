@@ -17,10 +17,21 @@ export function AdminAccessPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [language, setLanguage] = useState("en");
+  const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
     const saved = window.localStorage.getItem("sevasetu-language");
     if (saved === "hi") setLanguage(saved);
+    fetch("/api/v1/auth/me", { cache: "no-store" })
+      .then(async (response) => response.ok ? response.json() : null)
+      .then((session) => {
+        if (session?.data?.role === "ADMIN") {
+          window.location.replace("/admin");
+          return;
+        }
+        setCheckingSession(false);
+      })
+      .catch(() => setCheckingSession(false));
     fetch("/api/v1/auth/admin-status", { cache: "no-store" })
       .then(async (response) => {
         const data = await response.json().catch(() => ({}));
@@ -62,5 +73,6 @@ export function AdminAccessPage() {
     }
   }
 
+  if (checkingSession) return <main className="auth-page"><section className="auth-card"><LoaderCircle className="spin" size={24} /></section></main>;
   return <main className="auth-page"><div className="auth-language"><PublicLanguagePicker onLanguageChange={setLanguage} /></div><Link className="brand auth-brand" href="/"><SevaSetuLogo /></Link><section className="auth-card"><div className="auth-intro"><span className="portal-icon"><ShieldCheck size={19} /></span><span className="kicker">{portalText(language, "adminAccess")}</span><h1>{mode === "CREATE" ? portalText(language, "createAdmin") : portalText(language, "welcomeAdmin")}</h1><p>{mode === "CREATE" ? portalText(language, "chooseAdminCredentials") : portalText(language, "signInAdminDescription")}</p></div>{statusLoaded && <><div className="role-switch" role="tablist" aria-label={portalText(language, "accessMode")}>{!adminExists && <button className={mode === "CREATE" ? "active" : ""} onClick={() => { setMode("CREATE"); setError(""); }} type="button">{portalText(language, "createAccount")}</button>}<button className={mode === "LOGIN" ? "active" : ""} onClick={() => { setMode("LOGIN"); setError(""); }} type="button">{portalText(language, "signIn")}</button></div><form onSubmit={submit}>{mode === "CREATE" && !adminExists && <><label>{portalText(language, "fullName")}<input required value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} /></label><label>Bootstrap secret<input type="password" required autoComplete="off" placeholder="local-admin-bootstrap" value={form.bootstrapSecret} onChange={(event) => setForm({ ...form, bootstrapSecret: event.target.value })} /></label></>}<label>{portalText(language, "emailAddress")}<input type="email" required autoComplete="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} /></label><label>{portalText(language, "password")}<input type="password" required minLength={mode === "CREATE" ? 10 : undefined} autoComplete={mode === "CREATE" ? "new-password" : "current-password"} value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} /></label>{error && <p className="auth-error" role="alert">{error}</p>}<button className="button auth-submit" disabled={loading}>{loading ? <LoaderCircle className="spin" size={17} /> : <>{mode === "CREATE" ? portalText(language, "createAdminButton") : portalText(language, "signIn")} <ArrowRight size={17} /></>}</button></form></>}{!statusLoaded && !error && <p>Checking administrator access...</p>}{error && !statusLoaded && <p className="auth-error" role="alert">{error}</p>}<p className="auth-foot"><Link href="/">{portalText(language, "returnSevaSetu")}</Link></p></section></main>;
 }
