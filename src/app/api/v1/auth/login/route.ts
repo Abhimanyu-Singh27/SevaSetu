@@ -28,6 +28,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ data: { user: { id: user.id, email: user.email, role }, redirectUrl: roleHome(role) } });
   } catch (error) {
     console.error("Login failed", error);
-    return NextResponse.json({ error: "Unable to sign in" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("Rate limiting") || message.includes("rate limit")) {
+      return NextResponse.json({ error: "Sign-in is temporarily unavailable because rate-limit protection is not configured. Add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in Vercel, then redeploy." }, { status: 503 });
+    }
+    if (message.includes("DATABASE_URL") || message.includes("Prisma") || message.includes("Can't reach database") || message.includes("database")) {
+      return NextResponse.json({ error: "Sign-in is temporarily unavailable because the production database cannot be reached. Check Vercel DATABASE_URL, SSL settings, and database network access." }, { status: 503 });
+    }
+    return NextResponse.json({ error: "Unable to sign in. Check the deployment logs for the underlying service error." }, { status: 500 });
   }
 }

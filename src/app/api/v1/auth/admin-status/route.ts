@@ -14,6 +14,12 @@ export async function GET() {
     return NextResponse.json({ adminExists: adminExists > 0, activeAdmin: activeAdmin > 0 });
   } catch (error) {
     console.error("Administrator status check failed", error);
+    const details = error instanceof Error ? error.message : "";
+    console.error("Administrator status database diagnostics", {
+      name: error instanceof Error ? error.name : "UnknownError",
+      code: typeof error === "object" && error !== null && "code" in error ? String(error.code) : "unknown",
+      message: details,
+    });
     return NextResponse.json({ error: "DATABASE_URL is set, but the deployed app cannot reach the database. Check the production connection string, SSL settings, network access, and Prisma migrations." }, { status: 503 });
   }
 }

@@ -19,8 +19,10 @@ function databaseUrl() {
     throw new Error("DATABASE_URL must use the postgresql:// or postgres:// protocol.");
   }
 
-  // Preserve provider-specific query parameters exactly as configured.
-  return value;
+  if (process.env.NODE_ENV === "production" && !url.searchParams.has("sslmode")) {
+    url.searchParams.set("sslmode", "require");
+  }
+  return url.toString();
 }
 
 function createPrismaClient() {
