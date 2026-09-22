@@ -29,6 +29,7 @@ export async function GET() {
     }, { status: ready ? 200 : 503 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
+    const code = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "unknown";
     const reason = message.includes("required") || message.includes("invalid") || message.includes("protocol") || message.includes("localhost")
       ? "invalid_database_url"
       : "database_unreachable";
@@ -41,7 +42,7 @@ export async function GET() {
     return NextResponse.json(
       {
         status: "degraded",
-        checks: { database: "unavailable", reason },
+        checks: { database: "unavailable", reason, code },
         latencyMs: Date.now() - startedAt,
         timestamp: new Date().toISOString(),
       },
