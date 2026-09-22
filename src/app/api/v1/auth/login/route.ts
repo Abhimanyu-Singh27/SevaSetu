@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     if (!accountLimit.allowed) return NextResponse.json({ error: "Too many sign-in attempts. Try again later." }, { status: 429, headers: { "Retry-After": String(accountLimit.retryAfterSeconds) } });
     const user = await prisma.user.findUnique({ where: { email }, select: { id: true, email: true, passwordHash: true, role: true, status: true, emailVerifiedAt: true } });
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
-    if (user.role === "ADMIN") return NextResponse.json({ error: "Administrator accounts must sign in at /admin/login." }, { status: 403 });
+    if (user.role === "ADMIN") return NextResponse.json({ error: "Administrator accounts must sign in at /admin/sevasetu_login." }, { status: 403 });
     if (user.status !== "ACTIVE") return NextResponse.json({ error: "This account is not currently active" }, { status: 403 });
     if (!user.emailVerifiedAt) return NextResponse.json({ error: "Please verify your email before signing in." }, { status: 403 });
     await prisma.user.update({ where: { id: user.id }, data: { lastActiveAt: new Date() } });

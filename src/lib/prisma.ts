@@ -4,11 +4,23 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function databaseUrl() {
   const value = process.env.DATABASE_URL;
-  if (!value) return value;
-  const url = new URL(value);
-  if (!url.searchParams.has("connection_limit")) url.searchParams.set("connection_limit", process.env.NODE_ENV === "production" ? "10" : "5");
-  if (!url.searchParams.has("pool_timeout")) url.searchParams.set("pool_timeout", "20");
-  return url.toString();
+  if (!value) {
+    throw new Error("DATABASE_URL is required. Add a PostgreSQL connection string to the Vercel environment before building SevaSetu.");
+  }
+
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error("DATABASE_URL is invalid. Use a PostgreSQL URL such as postgresql://user:password@host/database?sslmode=require.");
+  }
+
+  if (url.protocol !== "postgresql:" && url.protocol !== "postgres:") {
+    throw new Error("DATABASE_URL must use the postgresql:// or postgres:// protocol.");
+  }
+
+  // Preserve provider-specific query parameters exactly as configured.
+  return value;
 }
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({

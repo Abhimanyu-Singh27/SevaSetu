@@ -43,6 +43,11 @@ Confirm port `5432` is listening before opening the registration page. If Docker
 3. Run `scripts/validate-production-env.ps1` in the deployment environment.
 4. Apply migrations with `npx prisma migrate deploy`. The Vercel build also applies pending migrations before `next build`.
 5. Deploy the tagged release to the production Vercel project.
+
+Before deploying, add `DATABASE_URL` to the Vercel project's **Production** and **Preview**
+environment variables as needed. It must point to a hosted PostgreSQL database; do not use
+`localhost` or a local `.env` value because Vercel cannot reach your computer. The same
+database must be reachable during the build because `vercel.json` runs `prisma migrate deploy`.
 6. Verify `/api/health`, login, email verification, MFA, request creation, chat, uploads, and account deactivation.
 7. Confirm monitoring alerts and rollback instructions before inviting users.
 
