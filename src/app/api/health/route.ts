@@ -4,6 +4,13 @@ import { databaseDiagnostics, prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function databaseErrorCode(error: unknown) {
+  if (typeof error !== "object" || error === null) return "unknown";
+  if ("code" in error && typeof error.code === "string") return error.code;
+  if ("errorCode" in error && typeof error.errorCode === "string") return error.errorCode;
+  return "unknown";
+}
+
 export async function GET() {
   const startedAt = Date.now();
   const configuration = {
@@ -30,14 +37,14 @@ export async function GET() {
     }, { status: ready ? 200 : 503 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
-    const code = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "unknown";
+    const code = databaseErrorCode(error);
     const reason = message.includes("required") || message.includes("invalid") || message.includes("protocol") || message.includes("localhost")
       ? "invalid_database_url"
       : "database_unreachable";
     console.error("Health database check failed", {
       reason,
       name: error instanceof Error ? error.name : "UnknownError",
-      code: typeof error === "object" && error !== null && "code" in error ? String(error.code) : "unknown",
+      code,
       message,
     });
     return NextResponse.json(
