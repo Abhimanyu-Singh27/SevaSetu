@@ -51,6 +51,8 @@ export async function GET() {
       {
         status: "degraded",
         checks: { database: "unavailable", reason, code, connection: database },
+        databaseError: { name: error instanceof Error ? error.name : "UnknownError" },
+        release: { commit: process.env.VERCEL_GIT_COMMIT_SHA || "local" },
         latencyMs: Date.now() - startedAt,
         timestamp: new Date().toISOString(),
       },
