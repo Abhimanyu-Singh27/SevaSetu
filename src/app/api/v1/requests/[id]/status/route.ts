@@ -28,6 +28,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const action = body.action as RequestStatusAction;
   const transition = transitions[action];
   if (!transition || !transition.roles.includes(session.role)) return NextResponse.json({ error: "Action is not allowed for this account" }, { status: 403 });
+  const earningAmount = Number(body.earningAmount);
+  if (action === "complete" && (!Number.isFinite(earningAmount) || earningAmount < 0 || earningAmount > 10_000_000)) {
+    return NextResponse.json({ error: "Enter the final service amount from 0 to 10,000,000 INR." }, { status: 400 });
+  }
 
   const existing = await prisma.serviceRequest.findUnique({ where: { id }, include: { customer: true, worker: true, service: true } });
   if (!existing) return NextResponse.json({ error: "Service request not found" }, { status: 404 });
@@ -43,7 +47,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (idempotency.replay) return NextResponse.json(idempotency.replay.body, { status: idempotency.replay.status });
 
   const updated = await prisma.$transaction(async (tx) => {
-    const result = await tx.serviceRequest.update({ where: { id }, data: { status: transition.next } });
+    const data = { status: transition.next, ...(transition.next === "COMPLETED" ? { completedAt: new Date() } : {}) };
+    const claimed = await tx.serviceRequest.updateMany({ where: { id, status: existing.status }, data });
+    if (claimed.count !== 1) throw new Error("REQUEST_STATUS_CONFLICT");
+    const result = await tx.serviceRequest.findUniqueOrThrow({ where: { id } });
+    if (transition.next === "COMPLETED" && existing.worker) {
+      const worker = await tx.workerProfile.findUnique({ where: { id: existing.worker.id }, select: { availability: true } });
+      if (worker?.availability !== "OFFLINE") {
+        await tx.financialEntry.create({ data: { userId: session.userId, requestId: id, type: "EARNING", amount: earningAmount, currency: "INR", reference: `Service ${existing.service.name}` } });
+      }
+    }
     await tx.requestStatusHistory.create({ data: { requestId: id, actorId: session.userId, status: transition.next, note: body.note ? String(body.note).slice(0, 500) : undefined } });
     if (transition.next === "DISPUTED") await tx.disputeCase.upsert({ where: { requestId: id }, create: { requestId: id, openedBy: session.userId }, update: { status: "SUBMITTED", resolution: null, resolvedBy: null, resolvedAt: null } });
     await tx.auditLog.create({ data: { actorId: session.userId, action: "REQUEST_STATUS_CHANGED", targetType: "SERVICE_REQUEST", targetId: id, metadata: { from: existing.status, to: transition.next } } });

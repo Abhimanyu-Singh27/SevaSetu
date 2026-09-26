@@ -295,12 +295,24 @@ model WorkerProfile {
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   services           WorkerService[]
   requests           ServiceRequest[]   @relation("AssignedWorker")
+  availabilitySessions WorkerAvailabilitySession[]
   reviews            Review[]
   verification      Verification?
   savedBy            SavedWorker[]
   @@index([availability, verificationStatus])
   @@index([latitude, longitude])
   @@index([ratingAverage, completedJobs])
+}
+
+model WorkerAvailabilitySession {
+  id        String        @id @default(uuid()) @db.Uuid
+  workerId  String        @db.Uuid
+  startedAt DateTime      @default(now())
+  endedAt   DateTime?
+  worker    WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@index([workerId, startedAt])
+  @@index([workerId, endedAt])
 }
 
 model ServiceCategory {
@@ -453,13 +465,17 @@ model Report {
 }
 
 model Verification {
-  id          String             @id @default(uuid()) @db.Uuid
-  workerId    String             @unique @db.Uuid
-  status      VerificationStatus  @default(PENDING)
-  reviewedBy  String?            @db.Uuid
-  reviewedAt  DateTime?
-  notes       String?
-  worker      WorkerProfile       @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  id                   String             @id @default(uuid()) @db.Uuid
+  workerId             String             @unique @db.Uuid
+  status               VerificationStatus @default(PENDING)
+  documentObjectKey    String?
+  documentContentType  String?
+  documentSizeBytes    Int?
+  submittedAt          DateTime?
+  reviewedBy           String?            @db.Uuid
+  reviewedAt           DateTime?
+  notes                String?
+  worker               WorkerProfile      @relation(fields: [workerId], references: [id], onDelete: Cascade)
 }
 
 model FileAsset {

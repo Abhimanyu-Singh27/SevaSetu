@@ -32,7 +32,11 @@ Do not share a database between staging and production.
 3. Enable encryption and lifecycle cleanup for abandoned uploads.
 4. Create scoped access keys limited to the matching bucket.
 5. Set `S3_ENDPOINT`, `S3_BUCKET`, `S3_REGION=auto`, `S3_ACCESS_KEY_ID`, and `S3_SECRET_ACCESS_KEY`.
-6. Verify that the upload API returns `503` when storage is missing and only returns a presigned URL after configuration.
+6. Configure bucket CORS for the exact production and preview app origins, allowing browser `PUT` with the `Content-Type` header. Do not use a wildcard origin for identity documents.
+7. Set `UPLOAD_SCANNER_URL` to a private scanner endpoint; production identity submissions fail closed if scanning is unavailable.
+8. Verify that upload APIs return `503` when storage or scanning is missing and only accept a document after private metadata checks and a successful scan.
+
+Worker identity documents are stored in the private bucket and exposed only to authenticated administrators through short-lived signed URLs. The verification decision removes the uploaded object; workers remain unverified until an administrator approves their document.
 
 ## 4. Malware scanning
 

@@ -23,7 +23,7 @@ export function createObjectKey(userId: string, fileName: string) {
   return `uploads/${userId}/${randomUUID()}${extension}`;
 }
 
-export function presignObject(method: "PUT" | "HEAD", key: string, contentType?: string) {
+export function presignObject(method: "PUT" | "HEAD" | "GET" | "DELETE", key: string, contentType?: string) {
   const values = signingValues();
   if (!values.endpoint || !values.bucket || !values.accessKey || !values.secretKey) throw new Error("Private object storage is not configured");
   const endpoint = new URL(values.endpoint);
@@ -54,6 +54,16 @@ export async function getObjectMetadata(key: string) {
   const contentType = response.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase() || "";
   if (!Number.isSafeInteger(contentLength) || contentLength < 1 || !contentType) return null;
   return { sizeBytes: contentLength, contentType };
+}
+
+export function getSignedObjectUrl(key: string) {
+  return presignObject("GET", key).url;
+}
+
+export async function deleteObject(key: string) {
+  const signed = presignObject("DELETE", key);
+  const response = await fetch(signed.url, { method: "DELETE", cache: "no-store" });
+  return response.ok || response.status === 404;
 }
 
 export async function scanObject(key: string) {

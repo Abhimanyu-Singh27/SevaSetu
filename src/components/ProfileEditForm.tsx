@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { Check, LoaderCircle, Save } from "lucide-react";
+import { Check, LoaderCircle, Save, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { portalText } from "@/lib/portal-i18n";
 
@@ -27,9 +27,11 @@ export function ProfileEditForm({ user, availableServices = [], language = "en" 
   const [addressLine, setAddressLine] = useState(user.addresses[0]?.addressLine || "");
   const [city, setCity] = useState(user.addresses[0]?.city || "");
   const [serviceIds, setServiceIds] = useState(user.workerProfile?.services.map((item) => item.service.id) || []);
+  const [serviceSearch, setServiceSearch] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const filteredServices = availableServices.filter((service) => `${service.name} ${service.category.name}`.toLowerCase().includes(serviceSearch.trim().toLowerCase()));
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -66,7 +68,13 @@ export function ProfileEditForm({ user, availableServices = [], language = "en" 
         <label>{portalText(language, "yearsExperience")}<input type="number" min="0" max="80" required value={experienceYears} onChange={(event) => setExperienceYears(event.target.value)} /></label>
         <label>{portalText(language, "serviceRadius")}<input type="number" min="1" max="200" step="0.5" required value={serviceRadiusKm} onChange={(event) => setServiceRadiusKm(event.target.value)} /></label>
         <label className="profile-edit-wide">{portalText(language, "bio")}<textarea maxLength={1000} rows={4} value={bio} onChange={(event) => setBio(event.target.value)} placeholder={portalText(language, "keepDetailsUpdated")} /></label>
-        <fieldset className="profile-edit-wide profile-service-picker"><legend>{portalText(language, "servicesYouProvide")}</legend>{availableServices.length ? <div className="profile-service-options">{availableServices.map((service) => <label key={service.id}><input type="checkbox" checked={serviceIds.includes(service.id)} onChange={(event) => setServiceIds((current) => event.target.checked ? Array.from(new Set([...current, service.id])) : current.filter((id) => id !== service.id))} /><span>{service.name}<small>{service.category.name}</small></span></label>)}</div> : <p className="profile-edit-muted">{portalText(language, "noActiveServices")}</p>}</fieldset>
+        <fieldset className="profile-edit-wide profile-service-picker"><legend>{portalText(language, "servicesYouProvide")}</legend>{availableServices.length ? <>
+          <div className="profile-service-toolbar">
+            <label className="profile-service-search"><Search size={16} aria-hidden="true" /><span className="sr-only">{portalText(language, "searchServices")}</span><input type="search" value={serviceSearch} onChange={(event) => setServiceSearch(event.target.value)} placeholder={portalText(language, "searchServicesProfile")} /></label>
+            <span className="profile-service-count" aria-live="polite">{portalText(language, "selectedServicesCount", { count: serviceIds.length })}</span>
+          </div>
+          {filteredServices.length ? <div className="profile-service-options">{filteredServices.map((service) => <label key={service.id}><input type="checkbox" checked={serviceIds.includes(service.id)} onChange={(event) => setServiceIds((current) => event.target.checked ? Array.from(new Set([...current, service.id])) : current.filter((id) => id !== service.id))} /><span>{service.name}<small>{service.category.name}</small></span></label>)}</div> : <p className="profile-edit-muted" role="status">{portalText(language, "noMatchingServices")}</p>}
+        </> : <p className="profile-edit-muted">{portalText(language, "noActiveServices")}</p>}</fieldset>
       </>}
       {user.role !== "ADMIN" && <fieldset className="profile-edit-wide profile-location-fields"><legend>{portalText(language, "serviceLocation")}</legend><div className="profile-edit-grid"><label>{portalText(language, "locationLabel")}<input maxLength={40} value={locationLabel} onChange={(event) => setLocationLabel(event.target.value)} placeholder="Home, shop, or office" /></label><label>{portalText(language, "city")}<input required={Boolean(addressLine)} maxLength={80} value={city} onChange={(event) => setCity(event.target.value)} placeholder={portalText(language, "city")} /></label><label className="profile-edit-wide">{portalText(language, "address")}<input required={Boolean(city)} maxLength={160} value={addressLine} onChange={(event) => setAddressLine(event.target.value)} placeholder={portalText(language, "address")} /></label></div></fieldset>}
     </div>
