@@ -21,7 +21,7 @@ export function AdminAccessPage() {
 
   useEffect(() => {
     const saved = window.localStorage.getItem("sevasetu-language");
-    if (saved === "hi") setLanguage(saved);
+    if (saved === "hi") queueMicrotask(() => setLanguage(saved));
     fetch("/api/v1/auth/me", { cache: "no-store" })
       .then(async (response) => response.ok ? response.json() : null)
       .then((session) => {

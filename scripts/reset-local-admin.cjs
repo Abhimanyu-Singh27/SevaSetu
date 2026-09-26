@@ -13,3 +13,4 @@ main().catch((error) => {
     console.error(error);
     process.exitCode = 1;
 }).finally(() => prisma.$disconnect());
+/* eslint-disable @typescript-eslint/no-require-imports */
