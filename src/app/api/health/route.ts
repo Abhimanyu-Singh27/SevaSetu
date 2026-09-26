@@ -22,6 +22,15 @@ function databaseFailureKind(error: unknown, code: string) {
   return "unclassified_initialization_failure";
 }
 
+function safeDatabaseErrorDetail(error: unknown) {
+  if (!(error instanceof Error)) return "Unknown database error";
+  return error.message
+    .replace(/postgres(?:ql)?:\/\/[^\s'"`]+/gi, "[redacted database URL]")
+    .replace(/\b(password|token|secret|api[-_ ]?key)\s*[:=]\s*[^\s,;]+/gi, "$1=[redacted]")
+    .replace(/[\r\n\t]+/g, " ")
+    .slice(0, 320);
+}
+
 export async function GET() {
   const startedAt = Date.now();
   const configuration = {
@@ -67,6 +76,7 @@ export async function GET() {
         databaseError: {
           name: error instanceof Error ? error.name : "UnknownError",
           failureKind,
+          detail: safeDatabaseErrorDetail(error),
         },
         release: { commit: process.env.VERCEL_GIT_COMMIT_SHA || "local" },
         latencyMs: Date.now() - startedAt,
