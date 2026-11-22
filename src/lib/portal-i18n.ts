@@ -409,7 +409,7 @@ const translations = {
     showLess: "कम दिखाएं",
     browseServices: "सभी सेवाएं देखें",
     fromNeedHelp: "“मुझे मदद चाहिए” से",
-    allSorted: "“सब ठीक है।”",
+    allSorted: "“सब ठीक है”",
     betterWay: "काम पूरा करने का बेहतर तरीका",
     sevaSetuMakes: "सेवासेतु स्थानीय मदद खोजना और नियुक्त करना आसान, पारदर्शी और मानवीय बनाता है।",
     tellNeed: "हमें बताएं आपको क्या चाहिए",
