@@ -5,10 +5,13 @@ import { LocalizedDate, LocalizedText as T } from "@/components/LocalizedText";
 import { PublicLanguagePicker } from "@/components/PublicLanguagePicker";
 import { EmptyState, Stats, Status } from "@/components/portal/Shared";
 
-export default async function ServiceDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const service = await prisma.service.findFirst({ where: { slug, active: true, category: { active: true } }, select: { id: true, name: true, description: true, category: { select: { name: true } } } });
-  const category = service ? null : await prisma.serviceCategory.findFirst({ where: { slug, active: true }, select: { id: true, name: true, description: true, services: { where: { active: true }, select: { id: true, name: true } } } });
+export default async function ServiceDetailsPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams?: Promise<{ categoryId?: string }> }) {
+  const [{ slug }, query] = await Promise.all([params, searchParams ?? Promise.resolve<{ categoryId?: string }>({})]);
+  const service = await prisma.service.findFirst({ where: { slug: { equals: slug, mode: "insensitive" }, active: true, category: { active: true } }, select: { id: true, name: true, description: true, category: { select: { name: true } } } });
+  const categoryBySlug = service ? null : await prisma.serviceCategory.findFirst({ where: { slug: { equals: slug, mode: "insensitive" }, active: true, services: { some: { active: true } } }, select: { id: true, name: true, description: true, services: { where: { active: true }, select: { id: true, name: true } } } });
+  const category = categoryBySlug || (!service && query.categoryId && /^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i.test(query.categoryId)
+    ? await prisma.serviceCategory.findFirst({ where: { id: query.categoryId, active: true, services: { some: { active: true } } }, select: { id: true, name: true, description: true, services: { where: { active: true }, select: { id: true, name: true } } } })
+    : null);
   if (!service && !category) notFound();
   const services = service ? [{ id: service.id, name: service.name }] : category!.services;
   const scope = { user: { status: "ACTIVE" as const }, services: { some: { serviceId: { in: services.map((item) => item.id) } } } };
