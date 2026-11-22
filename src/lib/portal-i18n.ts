@@ -465,7 +465,7 @@ const translations = {
     verifiedLocalService: "सत्यापित स्थानीय सेवा",
     requestQuote: "कीमत पूछें",
     nearby: "पास में",
-    to: "से",
+    to: "तक",
     welcomeBackAuth: "वापसी पर स्वागत है",
     getThingsDone: "आइए काम पूरा करें।",
     signInDescription: "अपनी सेवाओं, अनुरोधों और बातचीत को संभालने के लिए लॉग इन करें।",
