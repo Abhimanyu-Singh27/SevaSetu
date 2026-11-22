@@ -1,0 +1,29 @@
+import Link from "next/link";
+import type { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { queryString, pageNumber, pageSize, type PortalQuery } from "@/lib/portal-config";
+import { serviceSearchTerm } from "@/lib/marketplace-search";
+import { LocalizedSelect, LocalizedInput, LocalizedText as T } from "@/components/LocalizedText";
+import { BookingForm } from "./BookingForm";
+import { SaveWorkerButton } from "./Actions";
+import { EmptyState, Pagination, Status } from "./Shared";
+
+export async function MarketplaceView({ userId, query = {}, savedOnly = false }: { userId: string; query?: PortalQuery; savedOnly?: boolean }) {
+  const q = queryString(query, "q").trim(); const city = queryString(query, "city").trim(); const serviceId = queryString(query, "service");
+  const onlyVerified = queryString(query, "verified") === "on"; const available = queryString(query, "available") === "on";
+  const page = pageNumber(query.page);
+  const workerId = queryString(query, "worker");
+  const where: Prisma.WorkerProfileWhereInput = { ...(/^[a-f\d-]{36}$/i.test(workerId) ? { id: workerId } : {}), user: { status: "ACTIVE", ...(city ? { addresses: { some: { city: { contains: city, mode: "insensitive" } } } } : {}) }, services: { some: { service: { active: true, category: { active: true } }, ...(/^[a-f\d-]{36}$/i.test(serviceId) ? { serviceId } : {}) } }, ...(savedOnly ? { savedBy: { some: { userId } } } : {}), ...(onlyVerified ? { verificationStatus: "VERIFIED" } : {}), ...(available ? { availability: "AVAILABLE" } : {}), ...(q ? { OR: [{ fullName: { contains: q, mode: "insensitive" } }, { services: { some: { service: { name: { contains: serviceSearchTerm(q), mode: "insensitive" } } } } }] } : {}) };
+  const [services, workers, total, address] = await Promise.all([
+    prisma.service.findMany({ where: { active: true, category: { active: true } }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    prisma.workerProfile.findMany({ where, orderBy: [{ ratingAverage: "desc" }, { ratingCount: "desc" }, { id: "asc" }], skip: (page - 1) * pageSize, take: pageSize, select: { id: true, fullName: true, bio: true, experienceYears: true, availability: true, verificationStatus: true, ratingAverage: true, ratingCount: true, services: { where: { service: { active: true, category: { active: true } } }, include: { service: { select: { id: true, name: true } } } }, savedBy: { where: { userId }, select: { userId: true } }, _count: { select: { requests: { where: { status: "COMPLETED" } } } } } }),
+    prisma.workerProfile.count({ where }),
+    prisma.address.findFirst({ where: { userId }, orderBy: { createdAt: "asc" }, select: { addressLine: true, city: true } }),
+  ]);
+  const initialLocation = address ? `${address.addressLine}, ${address.city}`.slice(0, 120) : "";
+  return <><form className="portal-filters" method="get"><LocalizedInput name="q" defaultValue={q} placeholder="Search name, service, or skill" aria-label="Search services" /><LocalizedSelect name="service" defaultValue={serviceId} aria-label="Service"><option value=""><T>All services</T></option>{services.map((service) => <option key={service.id} value={service.id}><T>{service.name}</T></option>)}</LocalizedSelect><LocalizedInput name="city" defaultValue={city} placeholder="City" aria-label="City" /><label className="portal-check"><input type="checkbox" name="verified" defaultChecked={onlyVerified} /><T>Verified only</T></label><label className="portal-check"><input type="checkbox" name="available" defaultChecked={available} /><T>Available now</T></label><button className="button"><T>Search</T></button></form>
+    {!savedOnly && <section className="portal-panel portal-direct-booking"><div><h2><T>Request help for a service</T></h2><p><T>Choose a specific professional below, or submit a request for an administrator to assign.</T></p></div><BookingForm services={services} initialLocation={initialLocation} /></section>}
+    {workers.length ? <div className="portal-professional-grid">{workers.map((worker) => <article className="portal-record-card" key={worker.id}><header><div><h2>{worker.fullName}</h2><p><T>{worker.verificationStatus === "VERIFIED" ? "Verified professional" : "Verification not approved"}</T></p></div><Status value={worker.availability} /></header>{worker.bio && <p>{worker.bio}</p>}<div className="portal-worker-facts"><span>★ {Number(worker.ratingAverage).toFixed(1)} ({worker.ratingCount} <T>reviews</T>)</span><span>{worker._count.requests} <T>completed jobs</T></span><span>{worker.experienceYears} <T>years of experience</T></span></div><ul className="portal-offering-list">{worker.services.map((offering) => <li key={offering.id}><span><T>{offering.service.name}</T></span><strong>{offering.price !== null ? `₹${Number(offering.price).toLocaleString("en-IN")}` : <T>Request quote</T>} <small><T>{offering.pricingType}</T></small></strong></li>)}</ul><div className="portal-actions"><Link className="text-button" href={`/professionals/${worker.id}`}><T>View profile</T></Link><SaveWorkerButton workerId={worker.id} saved={worker.savedBy.length > 0} /></div>{worker.availability === "OFFLINE" ? <p className="portal-helper"><T>This professional is offline. Save their profile or choose another.</T></p> : <BookingForm services={worker.services.map((offering) => offering.service)} workerId={worker.id} initialLocation={initialLocation} />}</article>)}</div> : <EmptyState title={savedOnly ? "No saved workers yet" : "No matching professionals"} description={savedOnly ? "Save professionals from service search to find them here for your next booking." : "Try another service or city, or clear your availability filters."} href={savedOnly ? "/customer/services" : undefined} action="Find a service" />}
+    <Pagination total={total} page={page} pageSize={pageSize} base={savedOnly ? "/customer/saved" : "/customer/services"} query={query} />
+  </>;
+}

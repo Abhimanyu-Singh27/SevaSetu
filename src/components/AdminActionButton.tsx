@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/LocalizedText";
+
 import { useState } from "react";
 
 export function AdminActionButton({ endpoint, id, label, status }: { endpoint: string; id: string; label: string; status: string }) {
@@ -11,5 +13,5 @@ export function AdminActionButton({ endpoint, id, label, status }: { endpoint: s
     setMessage(response.ok ? "Saved" : "Unable to save");
     setLoading(false);
   }
-  return <button className="outline-button" type="button" onClick={update} disabled={loading}>{loading ? "Saving..." : message || label}</button>;
+  return <button className="outline-button" type="button" onClick={update} disabled={loading}><LocalizedText>{loading ? "Saving..." : message || label}</LocalizedText></button>;
 }

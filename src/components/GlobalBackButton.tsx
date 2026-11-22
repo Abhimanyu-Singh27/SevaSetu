@@ -2,19 +2,11 @@
 
 import { ArrowLeft } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useLanguage } from "./LanguageProvider";
 
 export function GlobalBackButton() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [hasPageBackLink, setHasPageBackLink] = useState(true);
-
-  useEffect(() => {
-    setHasPageBackLink(Boolean(document.querySelector(".back-link")));
-  }, [pathname]);
-
-  if (pathname === "/" || pathname === "/admin" || pathname === "/customer" || pathname === "/worker" || pathname === "/login" || pathname === "/register" || pathname === "/admin/sevasetu_login") return null;
-  if (hasPageBackLink) return null;
-
-  return <button className="global-back-button" type="button" onClick={() => router.back()}><ArrowLeft size={16} /> Back</button>;
+  const pathname = usePathname(); const router = useRouter(); const { t } = useLanguage();
+  // Portal and detail pages provide their own contextual navigation.
+  if (["/", "/login", "/register"].includes(pathname) || /^\/(admin|customer|worker|services|professionals)(\/|$)/.test(pathname)) return null;
+  return <button className="global-back-button" type="button" onClick={() => router.back()}><ArrowLeft size={16} />{t("Back")}</button>;
 }

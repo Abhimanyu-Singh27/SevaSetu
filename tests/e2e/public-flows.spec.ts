@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/v1/auth/me", (route) => route.fulfill({ status: 401, json: { error: "Authentication required" } }));
+  await page.route("**/api/v1/marketplace-summary", (route) => route.fulfill({ json: { data: { workers: 0, completedJobs: 0, rating: null, ratingCount: 0, categories: [] } } }));
+});
+
 test("public entry points are available", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle(/SevaSetu/i);

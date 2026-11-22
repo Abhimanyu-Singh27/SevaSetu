@@ -1,22 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { portalText } from "@/lib/portal-i18n";
+import { LocalizedText as T } from "./LocalizedText";
+import { Feedback, usePortalMutation } from "./portal/Actions";
 
-export function AvailabilityToggle({ initial, language = "en" }: { initial: string; language?: string }) {
-  const [availability, setAvailability] = useState(initial);
-  const [busy, setBusy] = useState(false);
-  const next = availability === "AVAILABLE" ? "BUSY" : availability === "BUSY" ? "OFFLINE" : "AVAILABLE";
-  async function change() {
-    setBusy(true);
-    try {
-      const response = await fetch("/api/v1/workers/availability", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ availability: next }) });
-      if (!response.ok) return;
-      setAvailability(next);
-      window.dispatchEvent(new CustomEvent("sevasetu:availability", { detail: next }));
-    } finally {
-      setBusy(false);
-    }
-  }
-  return <div className="worker-status-row"><span><span className={`availability-dot ${availability.toLowerCase()}`} />{availability.replaceAll("_", " ")}</span><button type="button" onClick={change} disabled={busy}>{busy ? portalText(language, "savingAction") : portalText(language, "setStatus", { status: next.toLowerCase() })}</button></div>;
+export function AvailabilityToggle({ initial }: { initial: string; language?: string }) {
+  const [availability, setAvailability] = useState(initial); const mutation = usePortalMutation();
+  return <div className="worker-availability-control"><div className="portal-actions">{["AVAILABLE", "BUSY", "OFFLINE"].map((value) => <button className={availability === value ? "button" : "outline-button"} key={value} type="button" aria-pressed={availability === value} disabled={mutation.busy} onClick={async () => { if (value === availability) return; if (await mutation.run("/api/v1/workers/availability", { availability: value }, "PATCH", "Availability updated.")) { setAvailability(value); window.dispatchEvent(new CustomEvent("sevasetu:availability", { detail: value })); } }}><span className={`availability-dot ${value.toLowerCase()}`} /><T>{value}</T></button>)}</div><Feedback {...mutation} /></div>;
 }

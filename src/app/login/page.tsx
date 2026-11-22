@@ -1,5 +1,9 @@
 "use client";
 
+import { LocalizedDiv, LocalizedText } from "@/components/LocalizedText";
+
+import { useLanguage } from "@/components/LanguageProvider";
+
 import { FormEvent, useEffect, useState } from "react";
 import { ArrowRight, LoaderCircle, ShieldCheck } from "lucide-react";
 import { SevaSetuLogo } from "@/components/SevaSetuLogo";
@@ -13,12 +17,10 @@ export default function LoginPage() {
   const [role, setRole] = useState<"CUSTOMER" | "WORKER">("CUSTOMER");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [language, setLanguage] = useState("en");
+  const { language } = useLanguage();
   const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem("sevasetu-language");
-    if (saved === "hi") queueMicrotask(() => setLanguage(saved));
     fetch("/api/v1/auth/me", { cache: "no-store" })
       .then(async (response) => response.ok ? response.json() : null)
       .then((result) => {
@@ -40,5 +42,5 @@ export default function LoginPage() {
   }
 
   if (checkingSession) return <main className="auth-page"><section className="auth-card"><LoaderCircle className="spin" size={24} /></section></main>;
-  return <main className="auth-page"><div className="auth-language"><PublicLanguagePicker onLanguageChange={setLanguage} /></div><Link className="brand auth-brand" href="/"><SevaSetuLogo /></Link><section className="auth-card"><div className="auth-intro"><span className="portal-icon"><ShieldCheck size={19} /></span><span className="kicker">{portalText(language, "welcomeBackAuth")}</span><h1>{portalText(language, "getThingsDone")}</h1><p>{portalText(language, "signInDescription")}</p></div><div className="role-switch" role="tablist" aria-label={portalText(language, "accountType")}><button role="tab" aria-selected={role === "CUSTOMER"} className={role === "CUSTOMER" ? "active" : ""} onClick={() => setRole("CUSTOMER")} type="button">{portalText(language, "needService")}</button><button role="tab" aria-selected={role === "WORKER"} className={role === "WORKER" ? "active" : ""} onClick={() => setRole("WORKER")} type="button">{portalText(language, "provideServices")}</button></div><form onSubmit={submit}><label>{portalText(language, "emailAddress")}<input type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} /></label><label>{portalText(language, "password")}<input type="password" required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>{error && <p className="auth-error" role="alert">{error}</p>}<button className="button auth-submit" disabled={loading}>{loading ? <LoaderCircle className="spin" size={17} /> : <>{portalText(language, "signIn")} <ArrowRight size={17} /></>}</button></form><p className="auth-foot"><Link href="/forgot-password">{portalText(language, "forgotPassword")}</Link></p><p className="auth-foot">{portalText(language, "newToSevaSetu")} <Link href="/register">{portalText(language, "createAccount")}</Link></p></section></main>;
+  return <main className="auth-page"><div className="auth-language"><PublicLanguagePicker /></div><Link className="brand auth-brand" href="/"><SevaSetuLogo /></Link><section className="auth-card"><div className="auth-intro"><span className="portal-icon"><ShieldCheck size={19} /></span><span className="kicker"><LocalizedText>{portalText(language, "welcomeBackAuth")}</LocalizedText></span><h1><LocalizedText>{portalText(language, "getThingsDone")}</LocalizedText></h1><p><LocalizedText>{portalText(language, "signInDescription")}</LocalizedText></p></div><LocalizedDiv className="role-switch" role="tablist" aria-label={portalText(language, "accountType")}><button role="tab" aria-selected={role === "CUSTOMER"} className={role === "CUSTOMER" ? "active" : ""} onClick={() => setRole("CUSTOMER")} type="button"><LocalizedText>{portalText(language, "needService")}</LocalizedText></button><button role="tab" aria-selected={role === "WORKER"} className={role === "WORKER" ? "active" : ""} onClick={() => setRole("WORKER")} type="button"><LocalizedText>{portalText(language, "provideServices")}</LocalizedText></button></LocalizedDiv><form onSubmit={submit}><label><LocalizedText>{portalText(language, "emailAddress")}</LocalizedText><input type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} /></label><label><LocalizedText>{portalText(language, "password")}</LocalizedText><input type="password" required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>{error && <p className="auth-error" role="alert"><LocalizedText>{error}</LocalizedText></p>}<button className="button auth-submit" disabled={loading}>{loading ? <LoaderCircle className="spin" size={17} /> : <><LocalizedText>{portalText(language, "signIn")}</LocalizedText> <ArrowRight size={17} /></>}</button></form><p className="auth-foot"><Link href="/forgot-password"><LocalizedText>{portalText(language, "forgotPassword")}</LocalizedText></Link></p><p className="auth-foot"><LocalizedText>{portalText(language, "newToSevaSetu")}</LocalizedText> <Link href="/register"><LocalizedText>{portalText(language, "createAccount")}</LocalizedText></Link></p></section></main>;
 }

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { createHash, randomUUID } from "node:crypto";
 
 export type AppRole = "CUSTOMER" | "WORKER" | "ADMIN";
-export type SessionUser = { userId: string; email: string; role: AppRole };
+export type SessionUser = { userId: string; email: string; role: AppRole; sessionId?: string };
 
 const cookieName = "sevasetu_session";
 const sessionSecret = process.env.SESSION_SECRET;
@@ -72,7 +72,7 @@ export async function getSession(): Promise<SessionUser | null> {
     if (!session) return null;
     const user = await prisma.user.findFirst({ where: { id: payload.userId, status: "ACTIVE" }, select: { id: true } });
     if (!user) return null;
-    return { userId: payload.userId, email: payload.email, role: normalizedRole as AppRole };
+    return { userId: payload.userId, email: payload.email, role: normalizedRole as AppRole, sessionId: payload.sub };
   } catch {
     return null;
   }

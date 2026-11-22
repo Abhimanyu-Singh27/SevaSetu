@@ -1,18 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { LoaderCircle } from "lucide-react";
+import { useLanguage } from "./LanguageProvider";
+import { LocalizedText as T } from "./LocalizedText";
+import { Feedback, usePortalMutation } from "./portal/Actions";
 
 export function UserStatusButton({ userId, status }: { userId: string; status: "ACTIVE" | "BLOCKED" | "SUSPENDED" | "DEACTIVATED" }) {
-  const [currentStatus, setCurrentStatus] = useState(status);
-  const [loading, setLoading] = useState(false);
-
-  async function setStatus(nextStatus: "ACTIVE" | "BLOCKED" | "SUSPENDED" | "DEACTIVATED") {
-    setLoading(true);
-    const response = await fetch(`/api/v1/admin/users/${userId}/status`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: nextStatus }) });
-    if (response.ok) setCurrentStatus(nextStatus);
-    setLoading(false);
-  }
-
-  return <div className="user-status-actions"><button type="button" className={`button ${currentStatus === "BLOCKED" ? "outline-button" : "danger-button"}`} onClick={() => setStatus(currentStatus === "BLOCKED" ? "ACTIVE" : "BLOCKED")} disabled={loading}>{loading ? <LoaderCircle className="spin" size={15} /> : currentStatus === "BLOCKED" ? "Unblock" : "Block"}</button><button type="button" className="outline-button" onClick={() => setStatus("SUSPENDED")} disabled={loading}>Suspend</button><button type="button" className="outline-button" onClick={() => setStatus("DEACTIVATED")} disabled={loading}>Deactivate</button></div>;
+  const [current, setCurrent] = useState(status); const mutation = usePortalMutation(); const { t } = useLanguage();
+  const next = current === "ACTIVE" ? "BLOCKED" : "ACTIVE";
+  return <div className="portal-inline-action"><button className="outline-button" type="button" disabled={mutation.busy || current === "DEACTIVATED"} onClick={async () => { if (!window.confirm(t(next === "ACTIVE" ? "Restore access to this account?" : "Block this account and revoke its sign-in sessions?"))) return; if (await mutation.run(`/api/v1/admin/users/${userId}/status`, { status: next }, "POST", "Account status updated.")) setCurrent(next); }}><T>{next === "ACTIVE" ? "Restore access" : "Block account"}</T></button><Feedback {...mutation} /></div>;
 }

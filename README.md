@@ -1,56 +1,46 @@
 # SevaSetu
 
-SevaSetu is an API-first local services marketplace foundation for customers, workers, and administrators.
+A local services marketplace built with Next.js, PostgreSQL, and Prisma. Customers, workers, and administrators share a consistent portal with role-specific workflows and English/Hindi preferences.
 
-## Current production foundation
+## Account workflows
 
-- Next.js App Router web application
-- PostgreSQL Prisma schema in `prisma/schema.prisma`
-- Versioned API routes under `/api/v1`
-- Database health check at `/api/health`
-- Zod request contracts and realtime event contracts in `src/lib`
-- Shared role dashboards and responsive SevaSetu design system
+| Role | Available workflows |
+| --- | --- |
+| Customer | Search professionals by service/city, save workers, request a service, follow its timeline, cancel eligible requests, raise disputes/reports, review completed work, and message the assigned professional. |
+| Worker | Accept or decline requests, confirm appointments, update service progress, record completed-job amounts, publish services and prices, set availability, submit identity documents, and view reviews and activity analytics. |
+| Administrator | Manage customer/worker access, maintain the service catalog, assign unclaimed requests, review identity submissions, resolve support cases, inspect reviews and financial records, send account notifications, and audit administrative actions. |
+
+All portals include notifications with read controls, profile editing, language/theme preferences, and the ability to revoke other sign-in sessions. Duplicate worker service/pricing navigation has been consolidated; old pricing links remain supported.
+
+## Data and behavior
+
+- Dashboard totals, charts, public marketplace statistics, catalog entries, and activity lists come from database queries. Empty records produce an empty state; database failures are not presented as sample activity.
+- Request access is scoped to its customer or assigned worker. Administrative mutations require an administrator session and record an audit event.
+- Request transitions compare the current state before writing. Completion records earnings regardless of availability, and profile edits preserve existing service prices.
+- Finance displays recorded financial entries. It does not process card payments or establish that a bank settlement occurred.
+- GPS search uses browser-provided coordinates and each professional's saved service radius. Manual search uses the city on their profile. The simulated map has been removed.
+- English/Hindi preferences persist in a cookie and, for signed-in accounts, the database. Names, messages, and other participant-authored content remain as written. Logo wording and copyright remain English.
 
 ## Local setup
 
-1. Copy `.env.example` to `.env` and provide a PostgreSQL `DATABASE_URL`.
-2. Install dependencies with `npm install`.
-3. Generate the Prisma client with `npm run db:generate`.
-4. Validate the schema with `npm run db:validate`.
-5. Apply migrations with `npx prisma migrate dev --name init` after PostgreSQL is running.
-6. Start the web app with `npm run dev`.
+1. Install dependencies with `npm install`.
+2. Copy `.env.example` to `.env` and configure a PostgreSQL `DATABASE_URL`, authentication secrets, and the services used by your environment.
+3. Generate the client with `npm run db:generate`.
+4. Apply existing migrations with `npx prisma migrate deploy`.
+5. Optionally run `npm run db:seed` to create the starter service catalog. This does not create fictional customers, workers, reviews, or bookings.
+6. Start the application with `npm run dev`.
 
-The application is not a production handoff until a managed PostgreSQL database, Redis-compatible event transport, private object storage, authentication secrets, monitoring, backups, domain, CI/CD, and security test results are configured.
+Email verification/password recovery use the configured email provider. Identity-document uploads use the configured private storage and verification services. Their forms report a configuration or delivery failure when these services are unavailable.
 
-## Getting Started
+## Checks
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```text
+npm run lint
+npx tsc --noEmit
+npm test
+npm run test:e2e
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Unit tests cover role-based access, notification ownership, pricing validation and preservation, request transitions, earnings recording, moderation conflicts, and bilingual rendering of all supported portal sections. They use isolated database mocks.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Browser checks cover public entry points, language persistence, error translations, branding exceptions, and mobile overflow. Install Playwright browsers first, or set `PLAYWRIGHT_CHANNEL=msedge` to use installed Microsoft Edge. Set `PLAYWRIGHT_BASE_URL` when testing an already-running server.

@@ -1,27 +1,11 @@
 "use client";
 
 import { Languages } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useId } from "react";
+import { useLanguage } from "./LanguageProvider";
 
-const languages = [["en", "English"], ["hi", "हिन्दी"]] as const;
-
-export function PublicLanguagePicker({ onLanguageChange }: { onLanguageChange?: (language: string) => void }) {
-  const [language, setLanguage] = useState("en");
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem("sevasetu-language");
-    if (saved === "hi") {
-      queueMicrotask(() => setLanguage(saved));
-      document.documentElement.lang = saved;
-    }
-  }, []);
-
-  function changeLanguage(value: string) {
-    setLanguage(value);
-    window.localStorage.setItem("sevasetu-language", value);
-    document.documentElement.lang = value;
-    onLanguageChange?.(value);
-  }
-
-  return <label className="public-language-picker"><Languages aria-hidden="true" size={16} /><span className="sr-only">{language === "hi" ? "भाषा" : "Language"}</span><select value={language} onChange={(event) => changeLanguage(event.target.value)} aria-label={language === "hi" ? "भाषा" : "Language"}>{languages.map(([value, label]) => <option value={value} key={value}>{language === "hi" && value === "en" ? "अंग्रेज़ी" : label}</option>)}</select></label>;
+export function PublicLanguagePicker() {
+  const { language, setLanguage, saving, error, t } = useLanguage();
+  const id = useId();
+  return <div className="language-control"><label className="public-language-picker"><Languages aria-hidden="true" size={16} /><span className="sr-only">{t("Language")}</span><select value={language} disabled={saving} aria-describedby={saving || error ? id : undefined} onChange={(event) => setLanguage(event.target.value)}><option value="en">{language === "hi" ? "अंग्रेज़ी" : "English"}</option><option value="hi">हिन्दी</option></select></label>{(saving || error) && <small id={id} role={error ? "alert" : "status"}>{t(error || "Saving...")}</small>}</div>;
 }

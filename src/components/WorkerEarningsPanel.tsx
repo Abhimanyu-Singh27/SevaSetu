@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedSvg, LocalizedText } from "@/components/LocalizedText";
+
 import { useEffect, useState } from "react";
 import { Activity, LoaderCircle, Pause, Play } from "lucide-react";
 
@@ -59,17 +61,17 @@ export function WorkerEarningsPanel() {
 
   return <div className="worker-earnings-panel">
     <div className="worker-earnings-summary">
-      <div><span className="kicker">Last 12 active hours</span><strong>{data ? `₹${data.total.toLocaleString("en-IN", { maximumFractionDigits: 2 })}` : "—"}</strong><small>Recorded earnings by active hour</small></div>
-      <span className={`worker-earnings-state${data?.active ? " is-active" : ""}`}>{data?.active ? <><Activity size={14} /> Tracking active time</> : data ? <><Pause size={14} /> Paused while offline</> : <><LoaderCircle className="spin" size={14} /> Loading</>}</span>
+      <div><span className="kicker"><LocalizedText>{"Last 12 active hours"}</LocalizedText></span><strong><LocalizedText>{data ? `₹${data.total.toLocaleString("en-IN", { maximumFractionDigits: 2 })}` : "—"}</LocalizedText></strong><small><LocalizedText>{"Recorded earnings by active hour"}</LocalizedText></small></div>
+      <span className={`worker-earnings-state${data?.active ? " is-active" : ""}`}><LocalizedText>{data?.active ? <><Activity size={14} /><LocalizedText>{" Tracking active time"}</LocalizedText></> : data ? <><Pause size={14} /><LocalizedText>{" Paused while offline"}</LocalizedText></> : <><LoaderCircle className="spin" size={14} /><LocalizedText>{" Loading"}</LocalizedText></>}</LocalizedText></span>
     </div>
-    {error ? <p className="earnings-empty" role="status">Earnings data is temporarily unavailable.</p> : <>
-      <svg className="worker-earnings-chart" viewBox="0 0 400 142" role="img" aria-label={data?.hasEarnings ? "Service earnings per active hour" : "No service earnings recorded yet"}>
+    {error ? <p className="earnings-empty" role="status"><LocalizedText>{"Earnings data is temporarily unavailable."}</LocalizedText></p> : <>
+      <LocalizedSvg className="worker-earnings-chart" viewBox="0 0 400 142" role="img" aria-label={data?.hasEarnings ? "Service earnings per active hour" : "No service earnings recorded yet"}>
         {[28, 72, 116].map((y) => <line key={y} x1="8" x2="392" y1={y} y2={y} className="earnings-grid-line" />)}
         {segments.map((segment) => <path key={segment.key} d={segment.path} fill="none" stroke={segment.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />)}
-        {points.map((point, index) => <circle key={buckets[index].label} cx={point.x} cy={point.y} r="3.5" fill={values[index] > 0 ? "#14855f" : "#c83f48"}><title>{buckets[index].label}: ₹{buckets[index].amount.toLocaleString("en-IN")}</title></circle>)}
-      </svg>
-      <div className="worker-earnings-axis"><span>Earlier active hours</span><span>{data?.active ? <><Play size={11} /> Now</> : "Paused"}</span></div>
-      {!data?.hasEarnings && <p className="earnings-empty">Complete a service while Available or Busy to start the earnings graph.</p>}
+        {points.map((point, index) => <circle key={buckets[index].label} cx={point.x} cy={point.y} r="3.5" fill={values[index] > 0 ? "#14855f" : "#c83f48"}><title><LocalizedText>{buckets[index].label}</LocalizedText>: ₹{buckets[index].amount.toLocaleString("en-IN")}</title></circle>)}
+      </LocalizedSvg>
+      <div className="worker-earnings-axis"><span><LocalizedText>{"Earlier active hours"}</LocalizedText></span><span><LocalizedText>{data?.active ? <><Play size={11} /><LocalizedText>{" Now"}</LocalizedText></> : "Paused"}</LocalizedText></span></div>
+      {!data?.hasEarnings && <p className="earnings-empty"><LocalizedText>{"Complete a service while Available or Busy to start the earnings graph."}</LocalizedText></p>}
     </>}
   </div>;
 }

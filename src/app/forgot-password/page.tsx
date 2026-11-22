@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedText } from "@/components/LocalizedText";
+
 import { FormEvent, useState } from "react";
 
 export default function ForgotPasswordPage() {
@@ -13,5 +15,5 @@ export default function ForgotPasswordPage() {
     if (!response.ok) { setError(result.error || "Unable to send reset instructions"); return; }
     setMessage(result.data.message);
   }
-  return <main className="state-page"><section className="state-panel"><span className="kicker">Account recovery</span><h1>Reset your password</h1><p>Enter your email and we will send a secure reset link.</p><form onSubmit={submit}><label>Email address<input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} /></label>{error && <p className="auth-error">{error}</p>}{message && <p className="success-message">{message}</p>}<button className="button" type="submit">Send reset link</button></form><a href="/login">Back to sign in</a></section></main>;
+  return <main className="state-page"><section className="state-panel"><span className="kicker"><LocalizedText>{"Account recovery"}</LocalizedText></span><h1><LocalizedText>{"Reset your password"}</LocalizedText></h1><p><LocalizedText>{"Enter your email and we will send a secure reset link."}</LocalizedText></p><form onSubmit={submit}><label><LocalizedText>{"Email address"}</LocalizedText><input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} /></label>{error && <p className="auth-error"><LocalizedText>{error}</LocalizedText></p>}{message && <p className="success-message"><LocalizedText>{message}</LocalizedText></p>}<button className="button" type="submit"><LocalizedText>{"Send reset link"}</LocalizedText></button></form><a href="/login"><LocalizedText>{"Back to sign in"}</LocalizedText></a></section></main>;
 }

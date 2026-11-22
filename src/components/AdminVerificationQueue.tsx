@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedSection, LocalizedText, LocalizedTextarea } from "@/components/LocalizedText";
+
 import { useEffect, useState } from "react";
 import { Check, ExternalLink, LoaderCircle, ShieldCheck, X } from "lucide-react";
 
@@ -27,7 +29,7 @@ export function AdminVerificationQueue() {
     }
   }
 
-  useEffect(() => { void refresh(); }, []);
+  useEffect(() => { queueMicrotask(() => { void refresh(); }); }, []);
 
   async function decide(item: PendingVerification, decision: "approve" | "reject") {
     const note = notes[item.id]?.trim() || "";
@@ -53,13 +55,13 @@ export function AdminVerificationQueue() {
     }
   }
 
-  return <section className="admin-verification-queue" aria-label="Pending worker identity reviews">
-    {error && <p className="verification-message error" role="alert">{error}</p>}
-    {loading ? <div className="workspace-empty"><LoaderCircle className="spin" size={22} /><p>Loading verification requests...</p></div> : items.length ? items.map((item) => <article className="admin-verification-item" key={item.id}>
-      <header><span className="workspace-row-icon"><ShieldCheck size={17} /></span><div><h2>{item.workerName}</h2><p>{item.email}</p></div><span className="verification-status status-pending">Pending review</span></header>
-      <div className="admin-verification-document"><span>{item.contentType || "Identity document"} · {Math.ceil((item.sizeBytes || 0) / 1024)} KB</span><a href={item.documentUrl} target="_blank" rel="noopener noreferrer">Open private document <ExternalLink size={14} /></a></div>
-      <label className="admin-verification-notes">Review note<textarea rows={2} maxLength={500} value={notes[item.id] || ""} onChange={(event) => setNotes((current) => ({ ...current, [item.id]: event.target.value }))} placeholder="Required when rejecting" /></label>
-      <div className="admin-verification-actions"><button className="button" type="button" disabled={busyId === item.id} onClick={() => decide(item, "approve")}>{busyId === item.id ? <LoaderCircle className="spin" size={16} /> : <Check size={16} />} Approve identity</button><button className="outline-button" type="button" disabled={busyId === item.id} onClick={() => decide(item, "reject")}><X size={16} /> Reject</button></div>
-    </article>) : <div className="workspace-empty"><ShieldCheck size={25} /><h2>No pending identity reviews</h2><p>Worker submissions will appear here after secure upload checks pass.</p></div>}
-  </section>;
+  return <LocalizedSection className="admin-verification-queue" aria-label="Pending worker identity reviews">
+    {error && <p className="verification-message error" role="alert"><LocalizedText>{error}</LocalizedText></p>}
+    <LocalizedText>{loading ? <div className="workspace-empty"><LoaderCircle className="spin" size={22} /><p><LocalizedText>{"Loading verification requests..."}</LocalizedText></p></div> : items.length ? items.map((item) => <article className="admin-verification-item" key={item.id}>
+      <header><span className="workspace-row-icon"><ShieldCheck size={17} /></span><div><h2><LocalizedText>{item.workerName}</LocalizedText></h2><p>{item.email}</p></div><span className="verification-status status-pending"><LocalizedText>{"Pending review"}</LocalizedText></span></header>
+      <div className="admin-verification-document"><span><LocalizedText>{item.contentType || "Identity document"}</LocalizedText> · <LocalizedText>{Math.ceil((item.sizeBytes || 0) / 1024)}</LocalizedText><LocalizedText>{" KB"}</LocalizedText></span><a href={item.documentUrl} target="_blank" rel="noopener noreferrer"><LocalizedText>{"Open private document "}</LocalizedText><ExternalLink size={14} /></a></div>
+      <label className="admin-verification-notes"><LocalizedText>{"Review note"}</LocalizedText><LocalizedTextarea rows={2} maxLength={500} value={notes[item.id] || ""} onChange={(event) => setNotes((current) => ({ ...current, [item.id]: event.target.value }))} placeholder="Required when rejecting" /></label>
+      <div className="admin-verification-actions"><button className="button" type="button" disabled={busyId === item.id} onClick={() => decide(item, "approve")}>{busyId === item.id ? <LoaderCircle className="spin" size={16} /> : <Check size={16} />}<LocalizedText>{" Approve identity"}</LocalizedText></button><button className="outline-button" type="button" disabled={busyId === item.id} onClick={() => decide(item, "reject")}><X size={16} /><LocalizedText>{" Reject"}</LocalizedText></button></div>
+    </article>) : <div className="workspace-empty"><ShieldCheck size={25} /><h2><LocalizedText>{"No pending identity reviews"}</LocalizedText></h2><p><LocalizedText>{"Worker submissions will appear here after secure upload checks pass."}</LocalizedText></p></div>}</LocalizedText>
+  </LocalizedSection>;
 }

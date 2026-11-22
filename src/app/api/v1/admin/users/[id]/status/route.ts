@@ -13,6 +13,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const target = await prisma.user.findFirst({ where: { id, role: { in: ["CUSTOMER", "WORKER"] } }, select: { id: true, role: true, status: true } });
   if (!target) return NextResponse.json({ error: "Worker or customer not found" }, { status: 404 });
+  if (target.status === "DEACTIVATED") return NextResponse.json({ error: "Deactivated accounts cannot be restored." }, { status: 409 });
 
   const updated = await prisma.$transaction(async (transaction) => {
     const user = await transaction.user.update({ where: { id }, data: { status }, select: { id: true, status: true, role: true } });

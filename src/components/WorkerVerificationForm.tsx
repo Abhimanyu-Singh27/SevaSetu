@@ -1,12 +1,17 @@
 "use client";
 
+import { LocalizedText } from "@/components/LocalizedText";
+
+import { useLanguage } from "@/components/LanguageProvider";
+
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { BadgeCheck, FileCheck2, LoaderCircle, ShieldCheck, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type Verification = { status: string; submittedAt: string | null; notes: string | null; documentSubmitted: boolean };
 
-export function WorkerVerificationForm({ language = "en" }: { language?: string }) {
+export function WorkerVerificationForm() {
+  const { language } = useLanguage();
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
   const hindi = language === "hi";
@@ -69,17 +74,17 @@ export function WorkerVerificationForm({ language = "en" }: { language?: string 
   return <section className="worker-verification-panel" aria-labelledby="worker-verification-title">
     <header className="worker-verification-heading">
       <span className="workspace-row-icon"><ShieldCheck size={18} /></span>
-      <div><h2 id="worker-verification-title">{hindi ? "पहचान सत्यापन" : "Identity verification"}</h2><p>{hindi ? "अपना सरकारी पहचान दस्तावेज़ निजी रूप से जमा करें।" : "Submit a government identity document privately for review."}</p></div>
-      <span className={`verification-status status-${status.toLowerCase()}`}>{status === "VERIFIED" && <BadgeCheck size={14} />}{statusLabel}</span>
+      <div><h2 id="worker-verification-title"><LocalizedText>{hindi ? "पहचान सत्यापन" : "Identity verification"}</LocalizedText></h2><p><LocalizedText>{hindi ? "अपना सरकारी पहचान दस्तावेज़ निजी रूप से जमा करें।" : "Submit a government identity document privately for review."}</LocalizedText></p></div>
+      <span className={`verification-status status-${status.toLowerCase()}`}>{status === "VERIFIED" && <BadgeCheck size={14} />}<LocalizedText>{statusLabel}</LocalizedText></span>
     </header>
-    {status === "VERIFIED" ? <p className="worker-verification-note"><FileCheck2 size={17} /> {hindi ? "आपकी पहचान सत्यापित है और बैज सार्वजनिक प्रोफ़ाइल पर दिखता है।" : "Your identity is verified. The badge is visible on your public profile."}</p> : status === "PENDING" ? <p className="worker-verification-note">{hindi ? "दस्तावेज़ जमा हो गया है और समीक्षा की प्रतीक्षा में है। समीक्षा पूरी होने तक आपका प्रोफ़ाइल सत्यापित नहीं दिखेगा।" : "Your document is submitted and awaiting review. Your profile will not show as verified until review is approved."}</p> : <>
-      {status === "REJECTED" && verification?.notes && <p className="verification-message error">{verification.notes}</p>}
+    <LocalizedText>{status === "VERIFIED" ? <p className="worker-verification-note"><FileCheck2 size={17} /> <LocalizedText>{hindi ? "आपकी पहचान सत्यापित है और बैज सार्वजनिक प्रोफ़ाइल पर दिखता है।" : "Your identity is verified. The badge is visible on your public profile."}</LocalizedText></p> : status === "PENDING" ? <p className="worker-verification-note"><LocalizedText>{hindi ? "दस्तावेज़ जमा हो गया है और समीक्षा की प्रतीक्षा में है। समीक्षा पूरी होने तक आपका प्रोफ़ाइल सत्यापित नहीं दिखेगा।" : "Your document is submitted and awaiting review. Your profile will not show as verified until review is approved."}</LocalizedText></p> : <>
+      {status === "REJECTED" && verification?.notes && <p className="verification-message error"><LocalizedText>{verification.notes}</LocalizedText></p>}
       <form className="worker-verification-form" onSubmit={submit}>
-        <label>{hindi ? "सरकारी पहचान प्रमाण" : "Government identity proof"}<input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(event) => setFile(event.target.files?.[0] || null)} required disabled={busy} /><small>{hindi ? "JPG, PNG, WebP या PDF · अधिकतम 10 MB" : "JPG, PNG, WebP, or PDF · up to 10 MB"}</small></label>
-        <p className="worker-verification-privacy">{hindi ? "दस्तावेज़ निजी संग्रहण में रखा जाएगा और केवल अधिकृत समीक्षक इसे देख सकते हैं।" : "The document is stored privately and can only be viewed by authorized reviewers."}</p>
-        {error && <p className="verification-message error" role="alert">{error}</p>}
-        <button className="button" type="submit" disabled={!file || busy}>{busy ? <LoaderCircle className="spin" size={17} /> : <Upload size={16} />}{status === "REJECTED" ? (hindi ? "नया दस्तावेज़ जमा करें" : "Submit a new document") : (hindi ? "समीक्षा के लिए जमा करें" : "Submit for review")}</button>
+        <label><LocalizedText>{hindi ? "सरकारी पहचान प्रमाण" : "Government identity proof"}</LocalizedText><input ref={fileInput} className="verification-file-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(event) => setFile(event.target.files?.[0] || null)} required disabled={busy} /><span className="outline-button verification-file-picker">{file ? file.name : <LocalizedText>{"Choose document"}</LocalizedText>}</span><small><LocalizedText>{hindi ? "JPG, PNG, WebP या PDF · अधिकतम 10 MB" : "JPG, PNG, WebP, or PDF · up to 10 MB"}</LocalizedText></small></label>
+        <p className="worker-verification-privacy"><LocalizedText>{hindi ? "दस्तावेज़ निजी संग्रहण में रखा जाएगा और केवल अधिकृत समीक्षक इसे देख सकते हैं।" : "The document is stored privately and can only be viewed by authorized reviewers."}</LocalizedText></p>
+        {error && <p className="verification-message error" role="alert"><LocalizedText>{error}</LocalizedText></p>}
+        <button className="button" type="submit" disabled={!file || busy}>{busy ? <LoaderCircle className="spin" size={17} /> : <Upload size={16} />}<LocalizedText>{status === "REJECTED" ? (hindi ? "नया दस्तावेज़ जमा करें" : "Submit a new document") : (hindi ? "समीक्षा के लिए जमा करें" : "Submit for review")}</LocalizedText></button>
       </form>
-    </>}
+    </>}</LocalizedText>
   </section>;
 }

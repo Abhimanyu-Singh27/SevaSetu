@@ -12,6 +12,7 @@ export async function GET(request: Request) {
   const services = await prisma.service.findMany({
     where: {
       active: true,
+      category: { active: true },
       ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
     },
     select: {

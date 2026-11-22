@@ -30,21 +30,25 @@ export async function PATCH(request: Request) {
   if (addressLine && !city) return NextResponse.json({ error: "City is required when adding a location" }, { status: 400 });
   if (city && !addressLine) return NextResponse.json({ error: "Address is required when adding a location" }, { status: 400 });
   const rawServiceIds: unknown[] = Array.isArray(body.serviceIds) ? body.serviceIds : [];
+  const updateServices = Object.prototype.hasOwnProperty.call(body, "serviceIds");
+  if (updateServices && !Array.isArray(body.serviceIds)) return NextResponse.json({ error: "One or more selected services are unavailable" }, { status: 400 });
   const serviceIds: string[] = Array.from(new Set(rawServiceIds.map((value) => String(value))));
 
   const bio = text(body.bio, 1000);
   const experienceYears = Number(body.experienceYears);
   const serviceRadiusKm = Number(body.serviceRadiusKm);
-  if (!Number.isInteger(experienceYears) || experienceYears < 0 || experienceYears > 80) return NextResponse.json({ error: "Experience must be a whole number from 0 to 80" }, { status: 400 });
-  if (!Number.isFinite(serviceRadiusKm) || serviceRadiusKm < 1 || serviceRadiusKm > 200) return NextResponse.json({ error: "Service radius must be between 1 and 200 km" }, { status: 400 });
+  if (session.role === "WORKER" && (!Number.isInteger(experienceYears) || experienceYears < 0 || experienceYears > 80)) return NextResponse.json({ error: "Experience must be a whole number from 0 to 80" }, { status: 400 });
+  if (session.role === "WORKER" && (!Number.isFinite(serviceRadiusKm) || serviceRadiusKm < 1 || serviceRadiusKm > 200)) return NextResponse.json({ error: "Service radius must be between 1 and 200 km" }, { status: 400 });
 
   if (session.role === "WORKER") {
-    const services = await prisma.service.findMany({ where: { id: { in: serviceIds }, active: true }, select: { id: true } });
+    const services = updateServices ? await prisma.service.findMany({ where: { id: { in: serviceIds }, OR: [{ active: true, category: { active: true } }, { workers: { some: { worker: { userId: session.userId } } } }] }, select: { id: true } }) : [];
     if (services.length !== serviceIds.length) return NextResponse.json({ error: "One or more selected services are unavailable" }, { status: 400 });
     const user = await prisma.$transaction(async (transaction) => {
       const workerProfile = await transaction.workerProfile.update({ where: { userId: session.userId }, data: { fullName, bio: bio || null, experienceYears, serviceRadiusKm }, select: { id: true } });
-      await transaction.workerService.deleteMany({ where: { workerId: workerProfile.id } });
-      if (services.length) await transaction.workerService.createMany({ data: services.map((service) => ({ workerId: workerProfile.id, serviceId: service.id, pricingType: "STARTING_FROM" })) });
+      if (updateServices) {
+        await transaction.workerService.deleteMany({ where: { workerId: workerProfile.id, serviceId: { notIn: serviceIds } } });
+        for (const service of services) await transaction.workerService.upsert({ where: { workerId_serviceId: { workerId: workerProfile.id, serviceId: service.id } }, create: { workerId: workerProfile.id, serviceId: service.id, pricingType: "QUOTE_REQUIRED" }, update: {} });
+      }
       if (addressLine && city) {
         const existingAddress = await transaction.address.findFirst({ where: { userId: session.userId }, orderBy: { createdAt: "asc" }, select: { id: true } });
         if (existingAddress) await transaction.address.update({ where: { id: existingAddress.id }, data: { label: locationLabel, addressLine, city } });

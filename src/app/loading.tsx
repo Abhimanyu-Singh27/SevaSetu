@@ -1,10 +1,11 @@
+import { LocalizedDiv } from "@/components/LocalizedText";
 function SkeletonBlock({ className = "" }: { className?: string }) {
   return <div aria-hidden="true" className={`portal-skeleton ${className}`} />;
 }
 
 export default function Loading() {
   return (
-    <div className="portal-shell" aria-busy="true" aria-label="Loading SevaSetu">
+    <LocalizedDiv className="portal-shell" aria-busy="true" aria-label="Loading SevaSetu">
       <aside className="portal-sidebar portal-sidebar-skeleton">
         <SkeletonBlock className="skeleton-brand" />
         <div className="skeleton-nav">
@@ -25,6 +26,6 @@ export default function Loading() {
           <SkeletonBlock className="skeleton-panel" />
         </section>
       </main>
-    </div>
+    </LocalizedDiv>
   );
 }

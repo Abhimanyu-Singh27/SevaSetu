@@ -3,185 +3,53 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  BarChart3,
-  Bell,
-  BriefcaseBusiness,
-  Clock3,
-  ClipboardList,
-  LayoutDashboard,
-  MessageCircle,
-  Settings,
-  ShieldCheck,
-  SlidersHorizontal,
-  Users,
-  Wrench,
-  Moon,
-  Sun,
-  Menu,
-  X,
-  Languages,
-  FileText,
-  FolderKanban,
-  Star,
-  UserRound,
-} from "lucide-react";
+import { BarChart3, Bell, Clock3, ClipboardList, LayoutDashboard, MessageCircle, Settings, ShieldCheck, Users, Wrench, Moon, Sun, Menu, X, FileText, FolderKanban, Star, UserRound, Bookmark, Search, Send } from "lucide-react";
 import { SevaSetuLogo } from "./SevaSetuLogo";
-import { portalNavigation, portalText } from "@/lib/portal-i18n";
+import { PublicLanguagePicker } from "./PublicLanguagePicker";
+import { useLanguage } from "./LanguageProvider";
+import type { PortalRole } from "@/lib/portal-config";
 
-type AccountRole = "customer" | "worker" | "admin";
-
-const navigation: Record<AccountRole, { label: string; href: string; icon: typeof LayoutDashboard }[]> = {
+const navigation: Record<PortalRole, { section: string; label: string; icon: typeof LayoutDashboard; badge?: string }[]> = {
   customer: [
-    { label: "Dashboard", href: "/customer", icon: LayoutDashboard },
-    { label: "Search services", href: "/#services", icon: SlidersHorizontal },
-    { label: "My requests", href: "/customer/requests", icon: ClipboardList },
-    { label: "Service history", href: "/customer/history", icon: FileText },
-    { label: "Messages", href: "/customer/messages", icon: MessageCircle },
-    { label: "Saved workers", href: "/customer/saved", icon: BriefcaseBusiness },
-    { label: "Reviews", href: "/customer/reviews", icon: Star },
-    { label: "Notifications", href: "/customer/notifications", icon: Bell },
-    { label: "Profile", href: "/customer/profile", icon: UserRound },
+    { section: "", label: "Dashboard", icon: LayoutDashboard }, { section: "services", label: "Search services", icon: Search },
+    { section: "requests", label: "My requests", icon: ClipboardList, badge: "requests" }, { section: "history", label: "Service history", icon: FileText },
+    { section: "messages", label: "Messages", icon: MessageCircle, badge: "messages" }, { section: "saved", label: "Saved workers", icon: Bookmark },
+    { section: "reviews", label: "Reviews", icon: Star, badge: "reviews" }, { section: "notifications", label: "Notifications", icon: Bell, badge: "notifications" }, { section: "profile", label: "Profile", icon: UserRound },
   ],
   worker: [
-    { label: "Dashboard", href: "/worker", icon: LayoutDashboard },
-    { label: "Requests", href: "/worker/requests", icon: ClipboardList },
-    { label: "Messages", href: "/worker/messages", icon: MessageCircle },
-    { label: "Active services", href: "/worker/active", icon: FolderKanban },
-    { label: "Completed services", href: "/worker/completed", icon: FileText },
-    { label: "My services", href: "/worker/services", icon: Wrench },
-    { label: "Skills & pricing", href: "/worker/pricing", icon: SlidersHorizontal },
-    { label: "Availability", href: "/worker/availability", icon: Clock3 },
-    { label: "Reviews", href: "/worker/reviews", icon: Star },
-    { label: "Analytics", href: "/worker/analytics", icon: BarChart3 },
-    { label: "Profile", href: "/worker/profile", icon: UserRound },
-    { label: "Verification", href: "/worker/verification", icon: ShieldCheck },
+    { section: "", label: "Dashboard", icon: LayoutDashboard }, { section: "requests", label: "Requests", icon: ClipboardList, badge: "requests" },
+    { section: "active", label: "Active services", icon: FolderKanban, badge: "active" }, { section: "completed", label: "Completed services", icon: FileText },
+    { section: "services", label: "Services & pricing", icon: Wrench }, { section: "availability", label: "Availability", icon: Clock3 },
+    { section: "messages", label: "Messages", icon: MessageCircle, badge: "messages" }, { section: "reviews", label: "Reviews", icon: Star, badge: "reviews" },
+    { section: "analytics", label: "Analytics", icon: BarChart3 }, { section: "verification", label: "Verification", icon: ShieldCheck, badge: "verification" },
+    { section: "notifications", label: "Notifications", icon: Bell, badge: "notifications" }, { section: "profile", label: "Profile", icon: UserRound },
   ],
   admin: [
-    { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { label: "Users", href: "/admin/users", icon: Users },
-    { label: "Verification", href: "/admin/verification", icon: ShieldCheck },
-    { label: "Service categories", href: "/admin/categories", icon: FolderKanban },
-    { label: "Service requests", href: "/admin?panel=requests", icon: ClipboardList },
-    { label: "Finance", href: "/admin/finance", icon: FileText },
-    { label: "Fraud signals", href: "/admin/fraud", icon: ShieldCheck },
-    { label: "Disputes", href: "/admin/disputes", icon: Bell },
-    { label: "Broadcasts", href: "/admin/broadcasts", icon: Bell },
-    { label: "Reports & complaints", href: "/admin/reports", icon: Bell },
-    { label: "Reviews", href: "/admin/reviews", icon: Star },
-    { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
-    { label: "Audit logs", href: "/admin/audit", icon: FileText },
-    { label: "Notifications", href: "/admin/notifications", icon: Bell },
+    { section: "", label: "Dashboard", icon: LayoutDashboard }, { section: "users", label: "Users", icon: Users },
+    { section: "categories", label: "Service catalog", icon: FolderKanban }, { section: "requests", label: "Service requests", icon: ClipboardList },
+    { section: "verification", label: "Verification", icon: ShieldCheck, badge: "verification" }, { section: "reports", label: "Reports & complaints", icon: Bell, badge: "reports" },
+    { section: "disputes", label: "Disputes", icon: ShieldCheck, badge: "disputes" }, { section: "reviews", label: "Reviews", icon: Star },
+    { section: "finance", label: "Finance", icon: FileText }, { section: "broadcasts", label: "Broadcasts", icon: Send },
+    { section: "analytics", label: "Analytics", icon: BarChart3 }, { section: "audit", label: "Audit logs", icon: FileText },
+    { section: "notifications", label: "Notifications", icon: Bell, badge: "notifications" }, { section: "profile", label: "Profile", icon: UserRound },
   ],
 };
 
-const roleNames: Record<AccountRole, string> = { customer: "Customer", worker: "Worker", admin: "Admin" };
-const languages = [
-  ["en", "English"], ["hi", "हिन्दी"],
-] as const;
-const badgeKeys: Record<string, string> = {
-  "My requests": "requests",
-  Requests: "requests",
-  "Active services": "services",
-  "Saved workers": "saved",
-  Reviews: "reviews",
-  Notifications: "notifications",
-  Messages: "messages",
-  Verification: "verification",
-  "Reports & complaints": "reports",
-};
-
-export function AccountSidebar({ role, badges = {} }: { role: AccountRole; badges?: Record<string, number> }) {
-  const [dark, setDark] = useState(false);
-  const [liveBadges, setLiveBadges] = useState(badges);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [language, setLanguage] = useState("en");
-  const [languageMessage, setLanguageMessage] = useState("");
-  const pathname = usePathname();
-  const translatedNavigation = portalNavigation(language);
-  const translatedLabels: Record<string, string> = {
-    Dashboard: translatedNavigation.dashboard, "Search services": translatedNavigation.searchServices, "My requests": translatedNavigation.requests,
-    "Service history": translatedNavigation.serviceHistory, Messages: translatedNavigation.messages, "Saved workers": translatedNavigation.savedWorkers,
-    Reviews: translatedNavigation.reviews, Notifications: translatedNavigation.notifications, Profile: translatedNavigation.profile,
-    "Active services": translatedNavigation.activeServices, "Completed services": translatedNavigation.completedServices, "My services": translatedNavigation.myServices,
-    "Skills & pricing": translatedNavigation.skillsPricing, Availability: translatedNavigation.availability, Analytics: translatedNavigation.analytics,
-    Verification: translatedNavigation.verification, Settings: translatedNavigation.settings,
-  };
-
+export function AccountSidebar({ role, badges = {} }: { role: PortalRole; badges?: Record<string, number> }) {
+  const pathname = usePathname(); const { t } = useLanguage();
+  const [dark, setDark] = useState(false); const [mobileOpen, setMobileOpen] = useState(false); const [liveBadges, setLiveBadges] = useState(badges);
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem("sevasetu-theme");
-    const isDark = savedTheme === "dark";
-    queueMicrotask(() => setDark(isDark));
-    document.documentElement.dataset.theme = isDark ? "dark" : "light";
+    const sync = () => setDark(document.documentElement.dataset.theme === "dark");
+    try { document.documentElement.dataset.theme = localStorage.getItem("sevasetu-theme") === "dark" ? "dark" : "light"; } catch { /* Keep the current theme. */ }
+    queueMicrotask(sync); window.addEventListener("sevasetu:theme", sync);
+    return () => window.removeEventListener("sevasetu:theme", sync);
   }, []);
-
   useEffect(() => {
-    fetch("/api/v1/account/preferences", { cache: "no-store" })
-      .then((response) => response.ok ? response.json() : null)
-      .then((data) => { if (data?.data?.preferredLanguage) setLanguage(data.data.preferredLanguage); })
-      .catch(() => undefined);
-  }, [role]);
-
-  useEffect(() => {
-    let active = true;
-    fetch("/api/sidebar-badges", { cache: "no-store" })
-      .then((response) => response.ok ? response.json() : null)
-      .then((data: Record<string, number> | null) => {
-        if (active && data) setLiveBadges(data);
-      })
-      .catch(() => undefined);
-    return () => { active = false; };
-  }, []);
-  function toggleTheme() {
-    const nextIsDark = !dark;
-    setDark(nextIsDark);
-    window.localStorage.setItem("sevasetu-theme", nextIsDark ? "dark" : "light");
-    document.documentElement.dataset.theme = nextIsDark ? "dark" : "light";
-  }
-
-  async function changeLanguage(value: string) {
-    const previous = language;
-    setLanguage(value);
-    setLanguageMessage("Saving...");
-    try {
-      const response = await fetch("/api/v1/account/preferences", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ preferredLanguage: value }) });
-      if (!response.ok) throw new Error("Unable to save language");
-      setLanguageMessage("Saved");
-      window.setTimeout(() => setLanguageMessage(""), 1600);
-    } catch {
-      setLanguage(previous);
-      setLanguageMessage("Unable to save");
-    }
-  }
-
-  return (
-    <aside className="portal-sidebar">
-      <Link className="portal-brand" href="/" aria-label="SevaSetu home">
-        <SevaSetuLogo compact />
-      </Link>
-      <button className="mobile-nav-toggle" type="button" onClick={() => setMobileOpen((open) => !open)} aria-expanded={mobileOpen} aria-controls="portal-navigation">
-        {mobileOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}<span>{mobileOpen ? portalText(language, "closeMenu") : portalText(language, "openMenu")}</span>
-      </button>
-      <nav id="portal-navigation" className={`portal-nav${mobileOpen ? " mobile-open" : ""}`} aria-label={role === "customer" ? portalText(language, "customerNavigation") : role === "worker" ? portalText(language, "workerNavigation") : `${roleNames[role]} navigation`}>
-        {navigation[role].map(({ label, href, icon: Icon }) => (
-          <Link href={href} onClick={() => setMobileOpen(false)} aria-current={pathname === href ? "page" : undefined} key={label}>
-            <Icon aria-hidden="true" /><span>{translatedLabels[label] || label}</span>
-              {liveBadges[badgeKeys[label]] > 0 ? <b className="sidebar-badge">{liveBadges[badgeKeys[label]] > 99 ? "99+" : liveBadges[badgeKeys[label]]}</b> : null}
-          </Link>
-        ))}
-      </nav>
-      <div className="portal-settings">
-        <a className="settings-link" href={`/${role}/settings`}>
-          <Settings aria-hidden="true" size={17} /><span>{translatedNavigation.settings}</span>
-        </a>
-        <div className="theme-row">
-          <span>{dark ? portalText(language, "darkMode") : portalText(language, "lightMode")}</span>
-          <button className={`theme-toggle${dark ? " active" : ""}`} type="button" onClick={toggleTheme} aria-label={dark ? portalText(language, "lightMode") : portalText(language, "darkMode")} aria-pressed={dark}>
-            <span>{dark ? <Moon size={11} /> : <Sun size={11} />}</span>
-          </button>
-        </div>
-        <label className="language-row"><span><Languages aria-hidden="true" size={17} /> {translatedNavigation.language}</span><select value={language} onChange={(event) => changeLanguage(event.target.value)} aria-label={translatedNavigation.language}>{languages.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select>{languageMessage && <small aria-live="polite">{languageMessage === "Saving..." ? portalText(language, "saving") : languageMessage === "Saved" ? portalText(language, "saved") : portalText(language, "saveFailed")}</small>}</label>
-      </div>
-    </aside>
-  );
+    const controller = new AbortController();
+    const load = () => { if (!document.hidden) void fetch("/api/sidebar-badges", { cache: "no-store", signal: controller.signal }).then((response) => response.ok ? response.json() : null).then((result) => { if (result && !controller.signal.aborted) setLiveBadges(result); }).catch(() => undefined); };
+    load(); const timer = window.setInterval(load, 60000); window.addEventListener("sevasetu:refresh", load); document.addEventListener("visibilitychange", load);
+    return () => { controller.abort(); clearInterval(timer); window.removeEventListener("sevasetu:refresh", load); document.removeEventListener("visibilitychange", load); };
+  }, [pathname]);
+  function toggleTheme() { const next = !dark; setDark(next); document.documentElement.dataset.theme = next ? "dark" : "light"; try { localStorage.setItem("sevasetu-theme", next ? "dark" : "light"); } catch { /* The current tab still applies the theme. */ } window.dispatchEvent(new Event("sevasetu:theme")); }
+  return <aside className="portal-sidebar"><Link className="portal-brand" href="/" aria-label="SevaSetu home"><SevaSetuLogo compact /></Link><button className="mobile-nav-toggle" type="button" onClick={() => setMobileOpen(!mobileOpen)} aria-expanded={mobileOpen} aria-controls="portal-navigation">{mobileOpen ? <X /> : <Menu />}<span>{t(mobileOpen ? "Close menu" : "Open menu")}</span></button><nav id="portal-navigation" className={`portal-nav${mobileOpen ? " mobile-open" : ""}`} aria-label={t(role === "admin" ? "Admin navigation" : role === "customer" ? "Customer navigation" : "Worker navigation")}>{navigation[role].map(({ section, label, icon: Icon, badge }) => { const href = `/${role}${section ? `/${section}` : ""}`; const active = pathname === href || (section && pathname.startsWith(`${href}/`)); return <Link key={section} href={href} onClick={() => setMobileOpen(false)} aria-current={active ? "page" : undefined}><Icon aria-hidden="true" /><span>{t(label)}</span>{badge && liveBadges[badge] > 0 && <b className="sidebar-badge">{liveBadges[badge] > 99 ? "99+" : liveBadges[badge]}</b>}</Link>; })}</nav><div className="portal-settings"><Link className="settings-link" href={`/${role}/settings`} aria-current={pathname === `/${role}/settings` ? "page" : undefined}><Settings size={17} />{t("Settings")}</Link><div className="theme-row"><span>{t(dark ? "Dark mode" : "Light mode")}</span><button className={`theme-toggle${dark ? " active" : ""}`} type="button" onClick={toggleTheme} aria-label={t(dark ? "Light mode" : "Dark mode")} aria-pressed={dark}><span>{dark ? <Moon size={11} /> : <Sun size={11} />}</span></button></div><div className="language-row"><span>{t("Language")}</span><PublicLanguagePicker /></div></div></aside>;
 }

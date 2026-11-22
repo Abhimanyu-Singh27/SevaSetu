@@ -12,12 +12,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const member = await prisma.conversationMember.findUnique({ where: { conversationId_userId: { conversationId: id, userId: session.userId } }, select: { conversationId: true } });
   if (!member) return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
   const url = new URL(_request.url);
+  const readThrough = new Date();
   const limit = Math.min(Math.max(Number(url.searchParams.get("limit") || 50), 1), 100);
   const cursor = url.searchParams.get("cursor") || undefined;
   const messages = await prisma.message.findMany({ where: { conversationId: id }, orderBy: { createdAt: "desc" }, take: limit + 1, ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}), select: { id: true, senderId: true, type: true, body: true, mediaUrl: true, createdAt: true } });
   const hasMore = messages.length > limit;
   if (hasMore) messages.pop();
-  await prisma.conversationMember.update({ where: { conversationId_userId: { conversationId: id, userId: session.userId } }, data: { lastReadAt: new Date() } });
+  await prisma.conversationMember.update({ where: { conversationId_userId: { conversationId: id, userId: session.userId } }, data: { lastReadAt: readThrough } });
+  await prisma.notification.updateMany({ where: { userId: session.userId, type: "MESSAGE", readAt: null, createdAt: { lte: readThrough }, data: { path: ["conversationId"], equals: id } }, data: { readAt: readThrough } });
   return NextResponse.json({ data: messages, meta: { nextCursor: hasMore ? messages.at(-1)?.id ?? null : null } });
 }
 

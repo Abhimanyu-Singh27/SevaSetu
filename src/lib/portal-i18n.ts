@@ -1,3 +1,8 @@
+import hindiUi from "./hi-ui.json";
+import hindiMessages from "./hi-messages.json";
+import hindiTemplates from "./hi-templates.json";
+import hindiPortal from "./hi-portal.json";
+
 export type PortalLanguage = "en" | "hi";
 
 const translations = {
@@ -158,7 +163,7 @@ const translations = {
     requestChatTrack: "Request, chat, track progress, and review the work.",
     popular: "Popular:",
     trustService: "Service you can trust",
-    reviewedCommunity: "Every professional is reviewed by our community.",
+    reviewedCommunity: "Compare identity verification, ratings, and service details.",
     averageCommunityRating: "Average community rating",
     electrician: "Electrician",
     plumber: "Plumber",
@@ -167,7 +172,7 @@ const translations = {
     peopleMakeItHappen: "People who make it happen",
     meetLocal: "Meet your local",
     professionals: "professionals.",
-    allProfessionals: "All professionals",
+    allProfessionals: "More professionals",
     starting: "starting",
     viewProfile: "View profile",
     createAccountToView: "Create account to view",
@@ -195,8 +200,8 @@ const translations = {
     trustedProfessionalsNear: "Showing trusted {service} professionals near {location}.",
     tellNeedNear: "Tell us what you need in {location} to find a match.",
     searchLocationFirst: "Search for a service and choose a location first.",
-    allAvailableProfessionals: "Showing all available SevaSetu professionals.",
-    featuredProfessionals: "Showing featured professionals.",
+    allAvailableProfessionals: "Showing more matching professionals.",
+    featuredProfessionals: "Showing top matching professionals.",
     locationUnavailable: "Location services are not available in this browser.",
     locationAccessFailed: "We could not access your location. Enter it manually or choose a point on the map.",
     sevasetuProfessional: "SevaSetu professional",
@@ -415,7 +420,7 @@ const translations = {
     requestChatTrack: "अनुरोध करें, बातचीत करें, प्रगति देखें और काम की समीक्षा करें।",
     popular: "लोकप्रिय:",
     trustService: "भरोसेमंद सेवा",
-    reviewedCommunity: "हर कर्मचारी की समीक्षा हमारे समुदाय द्वारा की जाती है।",
+    reviewedCommunity: "पहचान सत्यापन, रेटिंग और सेवा विवरण की तुलना करें।",
     averageCommunityRating: "समुदाय की औसत रेटिंग",
     electrician: "इलेक्ट्रीशियन",
     plumber: "प्लंबर",
@@ -424,7 +429,7 @@ const translations = {
     peopleMakeItHappen: "काम पूरा करने वाले लोग",
     meetLocal: "अपने स्थानीय",
     professionals: "कर्मचारियों से मिलें।",
-    allProfessionals: "सभी कर्मचारी",
+    allProfessionals: "और कर्मचारी",
     starting: "से शुरू",
     viewProfile: "प्रोफ़ाइल देखें",
     createAccountToView: "देखने के लिए खाता बनाएं",
@@ -452,8 +457,8 @@ const translations = {
     trustedProfessionalsNear: "{location} के पास भरोसेमंद {service} कर्मचारी दिखाए जा रहे हैं।",
     tellNeedNear: "सही कर्मचारी खोजने के लिए {location} में अपनी जरूरत बताएं।",
     searchLocationFirst: "पहले सेवा खोजें और स्थान चुनें।",
-    allAvailableProfessionals: "सभी उपलब्ध सेवासेतु कर्मचारी दिखाए जा रहे हैं।",
-    featuredProfessionals: "चुनिंदा कर्मचारी दिखाए जा रहे हैं।",
+    allAvailableProfessionals: "और संबंधित कर्मचारी दिखाए जा रहे हैं।",
+    featuredProfessionals: "प्रमुख संबंधित कर्मचारी दिखाए जा रहे हैं।",
     locationUnavailable: "इस ब्राउज़र में स्थान सेवा उपलब्ध नहीं है।",
     locationAccessFailed: "हम आपका स्थान नहीं जान सके। इसे स्वयं लिखें या मानचित्र पर कोई स्थान चुनें।",
     sevasetuProfessional: "सेवासेतु कर्मचारी",
@@ -539,3 +544,53 @@ export function portalNavigation(language: string | null | undefined) {
 }
 
 export type { TranslationKey };
+
+const phrasePairs: [string, string][] = [
+  ...Object.keys(translations.en).map((key) => [translations.en[key as TranslationKey], translations.hi[key as TranslationKey]] as [string, string]),
+  ...Object.entries(hindiUi),
+  ...Object.entries(hindiMessages),
+  ...Object.entries(hindiPortal),
+  ...Object.entries(hindiTemplates),
+];
+const normalizePhrase = (value: string) => value.replace(/\s+/g, " ").trim();
+const englishToHindi = new Map(phrasePairs.map(([en, hi]) => [normalizePhrase(en).toLowerCase(), hi]));
+const hindiToEnglish = new Map(phrasePairs.filter(([en]) => /[a-z]/i.test(en) && !/[\u0900-\u097f]/.test(en)).map(([en, hi]) => [normalizePhrase(hi), en]));
+const escapePattern = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const templatePairs = phrasePairs.filter(([en]) => /\{\w+\}/.test(en)).map(([en, hi]) => {
+  const compile = (value: string) => {
+    const names: string[] = [];
+    const pattern = normalizePhrase(value).split(/(\{\w+\})/).map((part) => {
+      const match = part.match(/^\{(\w+)\}$/);
+      if (!match) return escapePattern(part);
+      names.push(match[1]);
+      return "(.+?)";
+    }).join("");
+    return { regex: new RegExp(`^${pattern}$`, "i"), names };
+  };
+  return { en, hi, english: compile(en), hindi: compile(hi) };
+});
+
+/** Translate application-owned labels and templates; leave user-entered content intact. */
+export function translateText(language: string | null | undefined, value: string, depth = 0): string {
+  if (!value.trim() || depth > 4) return value;
+  // Branding and copyright intentionally retain their original English wording.
+  if (value.includes("©") || ["Seva", "Setu", "SevaSetu", "Har Seva, Ek Setu."].includes(value.trim())) return value;
+  const hindi = normalizePortalLanguage(language) === "hi";
+  const normalized = normalizePhrase(value);
+  const exact = hindi ? englishToHindi.get(normalized.replaceAll("_", " ").toLowerCase()) : hindiToEnglish.get(normalized);
+  const withSpacing = (result: string) => `${value.match(/^\s*/)?.[0] || ""}${result}${value.match(/\s*$/)?.[0] || ""}`;
+  if (exact) return withSpacing(exact);
+  for (const template of templatePairs) {
+    const source = hindi ? template.english : template.hindi;
+    const match = normalized.match(source.regex);
+    if (!match) continue;
+    const values = Object.fromEntries(source.names.map((name, index) => [name, ["name", "location", "coordinates"].includes(name) ? match[index + 1] : translateText(language, match[index + 1], depth + 1)]));
+    return withSpacing((hindi ? template.hi : template.en).replace(/\{(\w+)\}/g, (_, name: string) => values[name]));
+  }
+  const decorated = normalized.match(/^([✓★·]\s*)(.+)$/);
+  if (decorated) return withSpacing(decorated[1] + translateText(language, decorated[2], depth + 1));
+  const parts = value.split(/( · |, )/);
+  if (parts.length > 1) return parts.map((part, index) => index % 2 ? part : translateText(language, part, depth + 1)).join("");
+  return value;
+}

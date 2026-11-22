@@ -60,12 +60,13 @@ export async function POST(request: Request) {
   const parsed = serviceRequestInput.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid request details", details: parsed.error.flatten() }, { status: 400 });
   const input = parsed.data;
+  if (input.preferredDate && input.preferredDate.getTime() <= Date.now()) return NextResponse.json({ error: "Choose a future appointment time." }, { status: 400 });
   const customer = await prisma.customerProfile.findUnique({ where: { userId: session.userId }, select: { id: true } });
   if (!customer) return NextResponse.json({ error: "Customer profile is incomplete" }, { status: 409 });
-  const service = await prisma.service.findFirst({ where: { id: input.serviceId, active: true }, select: { id: true } });
+  const service = await prisma.service.findFirst({ where: { id: input.serviceId, active: true, category: { active: true } }, select: { id: true } });
   if (!service) return NextResponse.json({ error: "Service not found" }, { status: 404 });
   if (input.workerId) {
-    const worker = await prisma.workerProfile.findFirst({ where: { id: input.workerId, user: { status: "ACTIVE" }, services: { some: { serviceId: input.serviceId } } }, select: { id: true } });
+    const worker = await prisma.workerProfile.findFirst({ where: { id: input.workerId, availability: { not: "OFFLINE" }, user: { status: "ACTIVE" }, services: { some: { serviceId: input.serviceId } } }, select: { id: true } });
     if (!worker) return NextResponse.json({ error: "Worker not found" }, { status: 404 });
   }
 

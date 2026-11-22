@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedDate, LocalizedText } from "@/components/LocalizedText";
+
 import { useState } from "react";
 import { Check, LoaderCircle, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -53,18 +55,18 @@ export function WorkerRequestActions({ initialRequests }: { initialRequests: Wor
     }
   }
 
-  if (!requests.length) return <div className="workspace-empty"><Check size={24} /><h2>No open service requests</h2><p>New requests assigned to you will appear here.</p></div>;
+  if (!requests.length) return <div className="workspace-empty"><Check size={24} /><h2><LocalizedText>{"No open service requests"}</LocalizedText></h2><p><LocalizedText>{"New requests assigned to you will appear here."}</LocalizedText></p></div>;
 
   return <div className="worker-request-list">
-    {error && <p className="auth-error" role="alert">{error}</p>}
+    {error && <p className="auth-error" role="alert"><LocalizedText>{error}</LocalizedText></p>}
     {requests.map((request) => {
       const actions = nextActions[request.status] || [];
       return <article className="worker-request-item" key={request.id}>
-        <header><div><span className="kicker">{request.service.name}</span><h2>{request.customer.fullName}</h2></div><span className="status-pill">{request.status.replaceAll("_", " ")}</span></header>
+        <header><div><span className="kicker"><LocalizedText>{request.service.name}</LocalizedText></span><h2>{request.customer.fullName}</h2></div><span className="status-pill"><LocalizedText>{request.status.replaceAll("_", " ")}</LocalizedText></span></header>
         <p>{request.description}</p>
-        <small>Received {new Date(request.createdAt).toLocaleString("en-IN")}{request.budget !== null ? ` · Customer budget ₹${request.budget}` : ""}</small>
-        {request.status === "IN_PROGRESS" && <label className="worker-earning-input">Final service amount (₹)<input type="number" min="0" max="10000000" step="0.01" required value={amounts[request.id] || ""} onChange={(event) => setAmounts((current) => ({ ...current, [request.id]: event.target.value }))} /></label>}
-        {!!actions.length && <div className="worker-request-actions">{actions.map(({ action, label }) => <button className={action === "reject" ? "outline-button" : "button"} type="button" key={action} disabled={busyId === request.id} onClick={() => transition(request, action)}>{busyId === request.id ? <LoaderCircle className="spin" size={15} /> : action === "reject" ? <X size={15} /> : <Check size={15} />}{label}</button>)}</div>}
+        <small><LocalizedText>{"Received "}</LocalizedText><LocalizedDate value={new Date(request.createdAt)} time /><LocalizedText>{request.budget !== null ? ` · Customer budget ₹${request.budget}` : ""}</LocalizedText></small>
+        {request.status === "IN_PROGRESS" && <label className="worker-earning-input"><LocalizedText>{"Final service amount (₹)"}</LocalizedText><input type="number" min="0" max="10000000" step="0.01" required value={amounts[request.id] || ""} onChange={(event) => setAmounts((current) => ({ ...current, [request.id]: event.target.value }))} /></label>}
+        {!!actions.length && <div className="worker-request-actions">{actions.map(({ action, label }) => <button className={action === "reject" ? "outline-button" : "button"} type="button" key={action} disabled={busyId === request.id} onClick={() => transition(request, action)}><LocalizedText>{busyId === request.id ? <LoaderCircle className="spin" size={15} /> : action === "reject" ? <X size={15} /> : <Check size={15} />}</LocalizedText><LocalizedText>{label}</LocalizedText></button>)}</div>}
       </article>;
     })}
   </div>;
