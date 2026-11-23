@@ -8,13 +8,18 @@ export async function rateLimit(key: string, limit: number, windowSeconds: numbe
     return { allowed: true, remaining: limit, retryAfterSeconds: 0 };
   }
 
-  const response = await fetch(`${url}/pipeline`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify([["INCR", key], ["EXPIRE", key, windowSeconds]]),
-    cache: "no-store",
-  });
-  if (!response.ok) throw new Error("Rate limiting service unavailable");
+  let response: Response;
+  try {
+    response = await fetch(`${url}/pipeline`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify([["INCR", key], ["EXPIRE", key, windowSeconds]]),
+      cache: "no-store",
+    });
+  } catch {
+    throw new Error("Rate limiting service unavailable");
+  }
+  if (!response.ok) throw new Error(`Rate limiting service unavailable (HTTP ${response.status})`);
   const result = await response.json() as Array<{ result?: number }>;
   const count = Number(result[0]?.result || 0);
   return { allowed: count <= limit, remaining: Math.max(0, limit - count), retryAfterSeconds: count > limit ? windowSeconds : 0 };

@@ -42,6 +42,8 @@
   "Administrator creation requires the configured bootstrap secret.": "व्यवस्थापक खाता बनाने के लिए निर्धारित प्रारंभिक गुप्त कुंजी आवश्यक है।",
   "Administrator creation is disabled because an administrator already exists. Sign in instead.": "एक व्यवस्थापक पहले से मौजूद है, इसलिए नया व्यवस्थापक खाता बनाना बंद है। मौजूदा खाते से प्रवेश करें।",
   "Administrator access is unavailable because the database is not connected or migrations are missing. Check DATABASE_URL and run Prisma migrations.": "जानकारी का संग्रह जुड़ा नहीं है या उसका अद्यतन अधूरा है, इसलिए व्यवस्थापक प्रवेश उपलब्ध नहीं है। संग्रह का कनेक्शन और अद्यतन जांचें।",
+  "The rate-limit service is unavailable. Check the UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN settings and deployment network access.": "अनुरोध सीमा सेवा उपलब्ध नहीं है। UPSTASH_REDIS_REST_URL और UPSTASH_REDIS_REST_TOKEN की सेटिंग तथा सर्वर का नेटवर्क कनेक्शन जांचें।",
+  "Administrator account setup failed. Check the deployment logs for the underlying service error.": "व्यवस्थापक खाता सेटअप नहीं हो सका। सेवा की असली समस्या जानने के लिए सर्वर लॉग जांचें।",
   "A valid authenticator code is required.": "सही प्रमाणीकरण कोड आवश्यक है।",
   "Enter a valid authenticator code": "सही प्रमाणीकरण कोड दर्ज करें",
   "Password and authenticator code are required": "पासवर्ड और प्रमाणीकरण कोड आवश्यक हैं",

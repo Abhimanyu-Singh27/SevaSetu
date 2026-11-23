@@ -83,11 +83,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ data: { user: { id: user.id, email: user.email, role: "ADMIN" as AppRole }, redirectUrl: roleHome("ADMIN") } });
   } catch (error) {
     console.error("Administrator access failed", error);
-    if (error && typeof error === "object" && "code" in error && typeof error.code === "string" && error.code.startsWith("P")) {
+    const code = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : "";
+    const detail = error instanceof Error ? error.message : "";
+    if (/rate limiting service unavailable/i.test(detail)) {
+      return NextResponse.json({ error: "The rate-limit service is unavailable. Check the UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN settings and deployment network access." }, { status: 503 });
+    }
+    if (code.startsWith("P") || /DATABASE_URL|Prisma|database|PostgreSQL|Can't reach database|connection refused/i.test(detail)) {
       return NextResponse.json({ error: "Administrator access is unavailable because the database is not connected or migrations are missing. Check DATABASE_URL and run Prisma migrations." }, { status: 503 });
     }
     const message = process.env.NODE_ENV === "production"
-      ? "Unable to process administrator access. Check DATABASE_URL, Redis rate-limit configuration, and the deployment logs."
+      ? "Administrator account setup failed. Check the deployment logs for the underlying service error."
       : "Unable to process administrator access because the database or local services are unavailable. Start PostgreSQL and Redis, then try again.";
     return NextResponse.json({ error: message }, { status: 503 });
   }
