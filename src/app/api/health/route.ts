@@ -31,6 +31,30 @@ function safeDatabaseErrorDetail(error: unknown) {
     .slice(0, 320);
 }
 
+type RateLimitHealth = { status: "ok" | "not_configured" | "unavailable"; httpStatus?: number };
+
+async function checkRateLimitService(): Promise<RateLimitHealth> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return { status: "not_configured" };
+
+  try {
+    const response = await fetch(`${url}/pipeline`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify([["PING"]]),
+      cache: "no-store",
+      signal: AbortSignal.timeout(2500),
+    });
+    if (!response.ok) return { status: "unavailable", httpStatus: response.status };
+    const result = await response.json() as Array<{ result?: string; error?: string }>;
+    if (!Array.isArray(result) || result[0]?.result !== "PONG" || result[0]?.error) return { status: "unavailable" };
+    return { status: "ok" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
 export async function GET() {
   const startedAt = Date.now();
   const configuration = {
@@ -43,13 +67,14 @@ export async function GET() {
     realtime: Boolean(process.env.WEBSOCKET_PUBLISH_URL || (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)),
   };
   const database = databaseDiagnostics();
+  const rateLimitHealth = await checkRateLimitService();
   try {
     await prisma.$queryRaw`SELECT 1`;
-    const coreReady = configuration.session && configuration.appUrl && configuration.rateLimit;
+    const coreReady = configuration.session && configuration.appUrl && configuration.rateLimit && rateLimitHealth.status === "ok";
     const ready = process.env.NODE_ENV !== "production" || coreReady;
     return NextResponse.json({
       status: ready ? "ok" : "degraded",
-      checks: { database: "ok", configuration, connection: database },
+      checks: { database: "ok", rateLimit: rateLimitHealth, configuration, connection: database },
       optionalCapabilities: { email: configuration.email, storage: configuration.storage, uploadScanner: configuration.uploadScanner, realtime: configuration.realtime },
       release: { nodeEnv: process.env.NODE_ENV || "development", version: process.env.npm_package_version || "unknown", commit: process.env.VERCEL_GIT_COMMIT_SHA || "local" },
       latencyMs: Date.now() - startedAt,
@@ -72,7 +97,7 @@ export async function GET() {
     return NextResponse.json(
       {
         status: "degraded",
-        checks: { database: "unavailable", reason, code, connection: database },
+        checks: { database: "unavailable", rateLimit: rateLimitHealth, reason, code, connection: database },
         databaseError: {
           name: error instanceof Error ? error.name : "UnknownError",
           failureKind,

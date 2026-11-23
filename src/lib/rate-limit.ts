@@ -20,7 +20,14 @@ export async function rateLimit(key: string, limit: number, windowSeconds: numbe
     throw new Error("Rate limiting service unavailable");
   }
   if (!response.ok) throw new Error(`Rate limiting service unavailable (HTTP ${response.status})`);
-  const result = await response.json() as Array<{ result?: number }>;
+  let result: Array<{ result?: unknown; error?: string }>;
+  try {
+    result = await response.json() as Array<{ result?: unknown; error?: string }>;
+  } catch {
+    throw new Error("Rate limiting service unavailable");
+  }
+  if (!Array.isArray(result) || result.some((item) => item?.error)) throw new Error("Rate limiting service unavailable");
   const count = Number(result[0]?.result || 0);
+  if (!Number.isFinite(count)) throw new Error("Rate limiting service unavailable");
   return { allowed: count <= limit, remaining: Math.max(0, limit - count), retryAfterSeconds: count > limit ? windowSeconds : 0 };
 }
