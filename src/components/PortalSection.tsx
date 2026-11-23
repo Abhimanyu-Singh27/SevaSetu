@@ -39,7 +39,7 @@ export async function PortalSection({ role, section, query = {} }: { role: AppRo
     title = "Services & pricing"; description = descriptions.pricing;
     const [offerings, services] = await Promise.all([
       prisma.workerService.findMany({ where: { worker: { userId: session.userId } }, orderBy: { service: { name: "asc" } }, include: { service: { select: { name: true, active: true } } } }),
-      prisma.service.findMany({ where: { active: true, category: { active: true } }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+      prisma.service.findMany({ where: { active: true, category: { active: true } }, select: { id: true, name: true, category: { select: { name: true } } }, orderBy: [{ category: { name: "asc" } }, { name: "asc" }] }),
     ]);
     content = <ServicesEditor offerings={offerings.map((item) => ({ serviceId: item.serviceId, price: item.price === null ? null : Number(item.price), pricingType: item.pricingType, description: item.description, service: item.service }))} services={services} />;
   } else if (key === "messages") content = <MessagesPanel currentUserId={session.userId} initialConversationId={queryString(query, "conversation")} role={role.toLowerCase()} />;

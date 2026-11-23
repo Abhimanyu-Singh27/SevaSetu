@@ -401,5 +401,18 @@
   "Document pickup and delivery": "दस्तावेज लाना और पहुंचाना",
   "Commercial photography": "व्यावसायिक फोटोग्राफी",
   "{service} from verified SevaSetu professionals.": "{service} की सेवा सत्यापित SevaSetu कर्मचारियों द्वारा।",
-  "{category} services from local professionals.": "स्थानीय कर्मचारियों की {category} सेवाएं।"
+  "{category} services from local professionals.": "स्थानीय कर्मचारियों की {category} सेवाएं।",
+  "Add multiple services": "एक साथ कई सेवाएं जोड़ें",
+  "Select all shown": "दिखाई गई सभी सेवाएं चुनें",
+  "Clear selection": "चयन हटाएं",
+  "You have added every active catalog service to your profile.": "आपने सूची की सभी सक्रिय सेवाएं अपने परिचय में जोड़ दी हैं।",
+  "Select all the services you provide. Each one starts as quote-required so you can set its price separately.": "आप जो भी सेवाएं देते हैं, उन्हें चुनें। हर नई सेवा पहले अनुमान के आधार पर जोड़ी जाएगी, ताकि आप उसकी कीमत अलग से तय कर सकें।",
+  "Search services and categories": "सेवाओं और श्रेणियों में खोजें",
+  "Add selected services": "चुनी हुई सेवाएं जोड़ें",
+  "No active services are available in the catalog yet. Ask an administrator to publish services.": "सूची में अभी कोई सक्रिय सेवा नहीं है। व्यवस्थापक से सेवाएं प्रकाशित करने को कहें।",
+  "Services added. You can set prices individually below.": "सेवाएं जोड़ दी गईं। नीचे हर सेवा की कीमत अलग से तय करें।",
+  "Enter the rate for the selected time unit.": "चुनी गई समय अवधि के अनुसार दर दर्ज करें।",
+  "Save service details": "सेवा का विवरण सहेजें",
+  "Add services from the catalog to start receiving matching requests.": "संबंधित अनुरोध पाने के लिए सूची से अपनी सेवाएं जोड़ें।",
+  "Choose Edit pricing on a published service to set its price and details.": "कीमत और विवरण तय करने के लिए प्रकाशित सेवा पर ‘कीमत संपादित करें’ चुनें।"
 }

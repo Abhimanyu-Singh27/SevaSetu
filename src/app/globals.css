@@ -4758,6 +4758,16 @@ footer .footer-links {
 .service-catalog-availability { color: var(--muted); font-size: 13px; }
 .service-catalog-availability strong { color: var(--ink); font-size: 20px; margin-right: 4px; }
 .service-catalog-card > .outline-button { justify-self: start; }
+.portal-service-management { align-content: start; display: grid; gap: 20px; min-width: 0; }
+.portal-service-search { margin: 4px 0 14px; }
+.portal-service-catalog { display: grid; gap: 12px; max-height: 440px; overflow: auto; padding: 2px; }
+.portal-service-category { border: 1px solid var(--line); border-radius: 12px; margin: 0; min-width: 0; padding: 12px; }
+.portal-service-category legend { color: var(--ink); font-size: 13px; font-weight: 750; padding: 0 6px; }
+.portal-service-checkboxes { grid-template-columns: minmax(0, 1fr); }
+.portal-service-checkboxes label { border-radius: 7px; cursor: pointer; padding: 6px; }
+.portal-service-checkboxes label:hover { background: var(--surface-muted, rgba(15, 61, 145, .04)); }
+.portal-service-checkboxes label span { line-height: 1.5; }
+.portal-service-checkboxes input { flex: 0 0 auto; height: 16px; }
 @media (max-width: 980px) { .service-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .service-catalog-grid { grid-template-columns: minmax(0, 1fr); } .service-average-list li { align-items: flex-start; flex-direction: column; gap: 7px; } .service-average-list li > strong { text-align: left; } }
 .portal-workspace > * + * { margin-top: 24px; }

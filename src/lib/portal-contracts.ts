@@ -17,3 +17,6 @@ export const moderationInput = z.object({
   expectedStatus: z.string().min(1).max(40),
   note: z.string().trim().max(1000).default(""),
 });
+export const workerServiceBulkInput = z.object({
+  serviceIds: z.array(z.string().uuid()).min(1).max(100).refine((ids) => new Set(ids).size === ids.length),
+});
