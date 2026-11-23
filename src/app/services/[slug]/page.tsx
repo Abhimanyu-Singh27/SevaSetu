@@ -17,14 +17,15 @@ export default async function ServiceDetailsPage({ params, searchParams }: { par
   const [{ slug }, query] = await Promise.all([params, searchParams ?? Promise.resolve<{ categoryId?: string; serviceId?: string }>({})]);
   const validId = (value?: string) => Boolean(value && /^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i.test(value));
   const serviceSelect = { id: true, slug: true, name: true, description: true, category: { select: { name: true } } } as const;
-  const serviceBySlug = await prisma.service.findFirst({ where: { slug: { equals: slug, mode: "insensitive" }, active: true, category: { active: true } }, select: serviceSelect });
+  const serviceBySlug = await prisma.service.findFirst({ where: { slug: { equals: slug, mode: "insensitive" }, active: true, category: { active: true }, workers: { some: { worker: { user: { status: "ACTIVE" } } } } }, select: serviceSelect });
   const service = serviceBySlug || (validId(query.serviceId)
-    ? await prisma.service.findFirst({ where: { id: query.serviceId, active: true, category: { active: true } }, select: serviceSelect })
+    ? await prisma.service.findFirst({ where: { id: query.serviceId, active: true, category: { active: true }, workers: { some: { worker: { user: { status: "ACTIVE" } } } } }, select: serviceSelect })
     : null);
-  const categorySelect = { id: true, name: true, description: true, services: { where: { active: true }, select: { id: true, slug: true, name: true, description: true } } } as const;
-  const categoryBySlug = service ? null : await prisma.serviceCategory.findFirst({ where: { slug: { equals: slug, mode: "insensitive" }, active: true, services: { some: { active: true } } }, select: categorySelect });
+  const listedService = { active: true, workers: { some: { worker: { user: { status: "ACTIVE" as const } } } } };
+  const categorySelect = { id: true, name: true, description: true, services: { where: listedService, select: { id: true, slug: true, name: true, description: true } } } as const;
+  const categoryBySlug = service ? null : await prisma.serviceCategory.findFirst({ where: { slug: { equals: slug, mode: "insensitive" }, active: true, services: { some: listedService } }, select: categorySelect });
   const category = categoryBySlug || (!service && validId(query.categoryId)
-    ? await prisma.serviceCategory.findFirst({ where: { id: query.categoryId, active: true, services: { some: { active: true } } }, select: categorySelect })
+    ? await prisma.serviceCategory.findFirst({ where: { id: query.categoryId, active: true, services: { some: listedService } }, select: categorySelect })
     : null);
   if (!service && !category) notFound();
 

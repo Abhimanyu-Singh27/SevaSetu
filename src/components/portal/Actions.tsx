@@ -35,9 +35,9 @@ export function Feedback({ error, success }: { error?: string; success?: string 
 export function SubmitButton({ busy, children, className = "button", disabled = false }: { busy: boolean; children: ReactNode; className?: string; disabled?: boolean }) {
   return <button type="submit" className={className} disabled={busy || disabled}>{busy && <LoaderCircle size={15} className="spin" />}<T>{busy ? "Saving..." : children}</T></button>;
 }
-export function MutationButton({ endpoint, payload, method = "PATCH", children, confirm }: { endpoint: string; payload: unknown; method?: string; children: ReactNode; confirm?: string }) {
+export function MutationButton({ endpoint, payload, method = "PATCH", children, confirm, successMessage = "Changes saved." }: { endpoint: string; payload: unknown; method?: string; children: ReactNode; confirm?: string; successMessage?: string }) {
   const mutation = usePortalMutation(); const { t } = useLanguage();
-  return <div className="portal-inline-action"><button type="button" className="outline-button" disabled={mutation.busy} onClick={() => { if (!confirm || window.confirm(t(confirm))) void mutation.run(endpoint, payload, method); }}>{mutation.busy ? <LoaderCircle size={15} className="spin" /> : <T>{children}</T>}</button><Feedback {...mutation} /></div>;
+  return <div className="portal-inline-action"><button type="button" className="outline-button" disabled={mutation.busy} onClick={() => { if (!confirm || window.confirm(t(confirm))) void mutation.run(endpoint, payload, method, successMessage); }}>{mutation.busy ? <LoaderCircle size={15} className="spin" /> : <T>{children}</T>}</button><Feedback {...mutation} /></div>;
 }
 
 export function SaveWorkerButton({ workerId, saved }: { workerId: string; saved: boolean }) {

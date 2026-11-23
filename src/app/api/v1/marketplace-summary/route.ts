@@ -8,8 +8,8 @@ export async function GET() {
       prisma.workerProfile.count({ where: { user: { status: "ACTIVE" } } }),
       prisma.serviceRequest.count({ where: { OR: [{ status: "COMPLETED" }, { completedAt: { not: null } }] } }),
       prisma.review.aggregate({ _avg: { rating: true }, _count: { _all: true } }),
-      prisma.serviceCategory.findMany({ where: { active: true, services: { some: { active: true } } }, orderBy: { name: "asc" }, select: { id: true, name: true, slug: true, description: true } }),
+      prisma.serviceCategory.findMany({ where: { active: true, services: { some: { active: true, workers: { some: { worker: { user: { status: "ACTIVE" } } } } } } }, orderBy: { name: "asc" }, select: { id: true, name: true, slug: true, description: true } }),
     ]);
-    return NextResponse.json({ data: { workers, completedJobs, rating: ratings._avg.rating, ratingCount: ratings._count._all, categories } }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } });
+    return NextResponse.json({ data: { workers, completedJobs, rating: ratings._avg.rating, ratingCount: ratings._count._all, categories } }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) { return apiError(error, "Marketplace information is temporarily unavailable."); }
 }

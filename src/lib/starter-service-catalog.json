@@ -1,0 +1,18 @@
+[
+  { "name": "Home repairs", "slug": "home-repairs", "services": ["Electrical repair", "Plumbing repair", "Appliance repair", "Air-conditioner service", "Air-conditioner installation", "Geyser repair", "Water purifier service", "Inverter and battery service", "Locksmith", "Door and window repair"] },
+  { "name": "Cleaning", "slug": "cleaning", "services": ["House cleaning", "Deep cleaning", "Bathroom cleaning", "Kitchen cleaning", "Garden cleaning", "Water-tank cleaning", "Sofa and upholstery cleaning", "Carpet cleaning", "Move-in and move-out cleaning"] },
+  { "name": "Moving & delivery", "slug": "moving-delivery", "services": ["Moving help", "Packing and unpacking", "Loading and unloading", "Local delivery", "Furniture assembly", "Appliance installation"] },
+  { "name": "Construction", "slug": "construction", "services": ["Carpentry", "Painting", "Masonry", "Tile and flooring work", "Waterproofing", "Home renovation", "False ceiling installation", "Welding and fabrication", "Plastering", "Window and grill installation"] },
+  { "name": "Garden care", "slug": "garden-care", "services": ["Garden care", "Lawn mowing", "Landscaping", "Tree trimming", "Plant care"] },
+  { "name": "Pest control", "slug": "pest-control", "services": ["Pest control", "Termite treatment", "Mosquito control", "Rodent control", "Bed bug treatment"] },
+  { "name": "Car wash", "slug": "car-wash", "services": ["Car wash", "Bike wash", "Car detailing", "Interior car cleaning", "Vehicle polishing"] },
+  { "name": "Event help", "slug": "event-help", "services": ["Event help", "Event setup and cleanup", "Event decoration", "Event photography", "Catering assistance", "Sound and lighting setup", "Makeup for events"] },
+  { "name": "Automotive services", "slug": "automotive-services", "services": ["Car mechanic", "Bike mechanic", "Vehicle battery service", "Puncture repair", "Roadside assistance", "Vehicle inspection"] },
+  { "name": "Technology help", "slug": "technology-help", "services": ["Mobile phone repair", "Computer and laptop repair", "Wi-Fi and router setup", "Printer repair", "CCTV installation", "Smart home setup", "Data backup and transfer"] },
+  { "name": "Tailoring & laundry", "slug": "tailoring-laundry", "services": ["Laundry service", "Ironing service", "Tailoring", "Clothing alterations", "Curtain stitching", "Shoe repair"] },
+  { "name": "Personal care & wellness", "slug": "personal-care-wellness", "services": ["Home salon service", "Haircut at home", "Home spa service", "Yoga instruction", "Personal fitness training", "Makeup service"] },
+  { "name": "Education & tutoring", "slug": "education-tutoring", "services": ["Home tutoring", "Language tutoring", "Music lessons", "Computer lessons", "Exam preparation", "Art lessons"] },
+  { "name": "Home and family care", "slug": "home-family-care", "services": ["Childcare", "Elder care assistance", "Home cooking", "Meal preparation", "Household assistance"] },
+  { "name": "Pet care", "slug": "pet-care", "services": ["Pet grooming", "Dog walking", "Pet sitting", "Pet training"] },
+  { "name": "Office & business support", "slug": "office-business-support", "services": ["Office cleaning", "Office moving assistance", "Office equipment setup", "Document pickup and delivery", "Commercial photography"] }
+]

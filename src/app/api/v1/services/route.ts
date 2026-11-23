@@ -13,6 +13,7 @@ export async function GET(request: Request) {
     where: {
       active: true,
       category: { active: true },
+      workers: { some: { worker: { user: { status: "ACTIVE" } } } },
       ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
     },
     select: {
