@@ -31,28 +31,45 @@ function safeDatabaseErrorDetail(error: unknown) {
     .slice(0, 320);
 }
 
-type RateLimitHealth = { status: "ok" | "not_configured" | "unavailable"; httpStatus?: number };
+type RateLimitHealth = {
+  status: "ok" | "not_configured" | "unavailable";
+  reason?: "missing_credentials" | "network_error" | "timeout" | "http_error" | "invalid_json" | "unexpected_response" | "command_rejected";
+  httpStatus?: number;
+};
 
 async function checkRateLimitService(): Promise<RateLimitHealth> {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return { status: "not_configured" };
+  if (!url || !token) return { status: "not_configured", reason: "missing_credentials" };
 
+  let response: Response;
   try {
-    const response = await fetch(`${url}/pipeline`, {
+    response = await fetch(`${url}/pipeline`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify([["PING"]]),
       cache: "no-store",
       signal: AbortSignal.timeout(2500),
     });
-    if (!response.ok) return { status: "unavailable", httpStatus: response.status };
-    const result = await response.json() as Array<{ result?: string; error?: string }>;
-    if (!Array.isArray(result) || result[0]?.result !== "PONG" || result[0]?.error) return { status: "unavailable" };
-    return { status: "ok" };
-  } catch {
-    return { status: "unavailable" };
+  } catch (error) {
+    const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
+    return { status: "unavailable", reason: timedOut ? "timeout" : "network_error" };
   }
+  if (!response.ok) return { status: "unavailable", reason: "http_error", httpStatus: response.status };
+
+  let result: unknown;
+  try {
+    result = await response.json();
+  } catch {
+    return { status: "unavailable", reason: "invalid_json" };
+  }
+  if (!Array.isArray(result) || !result[0] || typeof result[0] !== "object") {
+    return { status: "unavailable", reason: "unexpected_response" };
+  }
+  const firstResult = result[0] as { result?: unknown; error?: unknown };
+  if (firstResult.error) return { status: "unavailable", reason: "command_rejected" };
+  if (firstResult.result !== "PONG") return { status: "unavailable", reason: "unexpected_response" };
+  return { status: "ok" };
 }
 
 export async function GET() {
